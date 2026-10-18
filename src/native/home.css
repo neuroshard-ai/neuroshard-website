@@ -54,7 +54,7 @@
 .stats span{font-size:12px;color:#7d8673}
 .stats strong{display:block;font:500 22px 'Space Grotesk',sans-serif;margin-top:8px;letter-spacing:-.02em}
 .columns{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:44px}
-.columns h3{letter-spacing:0;font-size:15px;color:#8e9884;font-family:inherit;margin-bottom:8px}
+.home .columns h3{letter-spacing:0;font-size:15px;color:#8e9884;font-family:inherit;margin-bottom:8px}
 .feed{list-style:none;padding:0;margin:0}
 .feed li{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #1d2119;font-size:14px}
 .feed b{font-weight:500}
