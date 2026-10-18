@@ -34,3 +34,17 @@
 .native-header{height:72px;border-bottom:0;max-width:1024px}.native-brand{font-size:20px}.native-brand img{height:26px}.native-header nav{gap:28px}.native-header nav a{color:#a8b09d}.native-header nav a:hover{color:#f3f5ee}.native-header .nav-join{border:0;background:var(--lime);color:#0b0d0a!important;border-radius:999px;padding:8px 16px;font-weight:600}
 .site-footer{max-width:960px;margin:0 auto;padding:40px 32px 56px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:13px;color:#7d8673}.site-footer nav{display:flex;gap:22px;flex-wrap:wrap}.footer-brand{display:flex;flex-direction:column;gap:4px}.footer-brand strong{color:#f3f5ee;font-weight:500}.site-footer a:hover{color:#f3f5ee}
 @media(max-width:720px){.native-header{height:64px}.site-footer{padding:32px 22px 44px}}
+
+.network-switch{border: 1px solid #53653a; padding: 25px; margin: 0 0 30px; background: #17200f;}
+.network-switch h2{font-size: 25px; letter-spacing: -.7px; margin: 13px 0;}
+.network-switch p{font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 850px;}
+.network-switch .native-actions{flex-wrap: wrap; margin-top: 18px;}
+.network-switch .native-button{font-size: 12px; padding: 11px 15px;}
+.baseline-label{padding: 15px 0 22px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); font-size: 12px; line-height: 1.7; color: var(--muted);}
+.baseline-label a{color: var(--lime); display: inline-flex; align-items: center; gap: 7px;}
+.baseline-banner{border-bottom: 1px solid var(--line); background: #14190f;}
+.baseline-banner > div{display: flex; flex-wrap: wrap; align-items: center; gap: 9px 22px; padding-top: 11px; padding-bottom: 11px; font-size: 11px; line-height: 1.6; color: var(--muted);}
+.baseline-banner a{color: var(--lime);}
+.native-app .skip-to-content{position: absolute; top: -80px; left: 15px; z-index: 100; background: var(--lime); color: #111; padding: 14px;}
+.native-app .skip-to-content:focus{top: 12px;}
+@media(max-width:720px){.network-switch{padding: 20px;}.network-switch .native-actions{flex-direction: column; align-items: stretch;}.baseline-banner > div{font-size: 10px;}}
