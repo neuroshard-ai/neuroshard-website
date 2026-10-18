@@ -62,3 +62,14 @@ test('old addresses lead to the right part of the home page', async ({ page }) =
   await page.getByRole('navigation').getByRole('link', { name: 'Join', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Join in one command.' })).toBeVisible();
 });
+
+test('the footer links only to current material, and retired pages lead home', async ({ page }) => {
+  await fixtures(page);
+  await page.goto('/');
+  const footer = page.getByRole('navigation', { name: 'Footer' });
+  await expect(footer.getByRole('link')).toHaveText(['Operator guide', 'How it grows', 'Decentralization', 'Paper', 'Source code', 'Contact']);
+  for (const old of ['/vision', '/teams', '/build', '/protocol']) {
+    await page.goto(old);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('An open AI that');
+  }
+});

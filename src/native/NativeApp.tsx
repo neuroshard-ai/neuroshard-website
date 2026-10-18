@@ -8,7 +8,7 @@ import Model from './Model';
 import releaseNetwork from '../networks/llm-testnet.json';
 import Chat from './Chat';
 import { SponsorStatus, Validators } from './Participation';
-import Vision, { Teams, GetInvolved, ALPHA_GUIDE } from './Vision';
+const ALPHA_GUIDE = 'https://docs.neuroshard.com/generated/JOIN_ALPHA';
 import Home from './Home';
 
 const SOURCE = 'https://github.com/neuroshard-ai/neuroshard';
@@ -98,18 +98,10 @@ function Ledger({ connection }: { connection: Connection }) {
     {selected && <section className="block-detail"><button aria-label="Close block detail" className="detail-close" onClick={() => setSelected(null)}><X size={20} /></button><div className="native-eyebrow">BLOCK {selected.height}</div><h3>Committed record</h3><dl><dt>Block hash</dt><dd>{selected.hash}</dd><dt>Application hash · state at height {selected.app_state_height}</dt><dd>{selected.app_hash || 'Genesis state'}</dd></dl>{selected.transactions.map(tx => <div className="transaction-detail" key={tx.hash}><strong>{tx.kind} · {tx.code === 0 ? "Accepted" : "Rejected"}</strong><dl><dt>Transaction</dt><dd>{tx.hash}</dd><dt>Signer</dt><dd>{tx.sender}</dd></dl><pre>{JSON.stringify(tx.body, null, 2)}</pre></div>)}</section>}
     <Validators /><section className="account-search"><div><div className="native-eyebrow">PUBLIC ACCOUNTS</div><h2>Look up a balance</h2><p>Enter a compressed public key. Your private key always stays on your machine.</p></div><form onSubmit={e => void lookup(e)}><label htmlFor="account-key">Account public key</label><input id="account-key" value={accountKey} onChange={e => setAccountKey(e.target.value)} placeholder="02… or 03…" pattern="0[23][0-9a-fA-F]{64}" required /><button className="native-button" type="submit">Look up account <ArrowRight size={16} /></button>{accountError && <p role="alert" className="form-error">{accountError}</p>}{account && <div className="account-result"><strong>{neuro(account.balance)} NEURO</strong><span>Next nonce: {account.nonce}</span></div>}</form></section><p className="muted ledger-footnote">Explorer data is served by this full node. Run your own node to verify the history independently. Account inclusion proofs are not provided by this API.</p></section>;
 }
-function Protocol() {
-  const cards = [
-    ['01 / ARCHITECTURE', 'How a shared model can grow', 'Sharding, compute groups, evaluated learning, resource admission, and the remaining scaling questions.', SOURCE + '/blob/main/docs/SCALING_DESIGN.md'],
-    ['02 / LEARNING', 'Useful updates, measured retention', 'Three prospectively admitted learning cohorts, automatic continuation, complete results, and the limits of those demonstrations.', SOURCE + '/blob/main/docs/CONTINUAL_ADMISSION_RESULTS.md'],
-    ['03 / NATIVE LIFECYCLE', 'From accepted work to paid inference', 'Verified training rewards, separate quality promotion, inference payments, and reproducible settlement evidence.', SOURCE + '/blob/main/docs/NATIVE_EXPERT_LIVE_RESULT.md'],
-  ];
-  return <section className="native-wrap native-page"><div className="native-eyebrow">ARCHITECTURE & RESEARCH</div><h1>Inspect the rules.<br /><em>Build on the results.</em></h1><p className="page-intro">The shared-intelligence vision is built on a concrete research program: distribute model execution, admit useful learning, verify the work, and settle contributions on NeuroShard’s own chain.</p><div className="protocol-cards">{cards.map(([number, title, description, url]) => <a key={number} href={url}><span>{number}</span><h2>{title}</h2><p>{description}</p><ArrowRight /></a>)}</div><section className="native-scope"><div><h2>Open questions.<br />Open evidence.</h2><a className="native-text-link" href={SOURCE + '/blob/main/TODO.md'}>Follow the completion criteria <ExternalLink size={15} /></a></div><div><p>Full replay checks executed work with substantial duplicate computation. Economical verification, reliable independent hosting, and broader assistant quality remain important development work.</p><p>The operated demonstrations use one administrator. Protocol admission alone does not establish independent ownership or a self-sustaining compute market.</p><p>The product direction for local teams builds on these results; private enterprise operation and a supported appliance are not yet shipped.</p></div></section><div className="native-actions"><a className="native-button secondary" href={SOURCE + '/blob/main/docs/LLM_PROTOCOL.md'}>0.4.0 protocol specification <ExternalLink size={15} /></a><a className="native-button secondary" href={asset('/papers/FINE2026_neuroshard_short.pdf')}>Research manuscript <ExternalLink size={15} /></a></div></section>;
-}
 function RoutePosition() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    const titles: Record<string, string> = { '/': 'An open AI that improves itself', '/vision': 'Vision', '/teams': 'AI for your team', '/build': 'Build with NeuroShard', '/explore': 'Explore the networks', '/protocol': 'Architecture & research', '/join': 'Join the network', '/baseline/join': 'Join the 0.4.0 baseline', '/chat': '0.4.0 inference demo', '/ledger': '0.4.0 ledger', '/model': '0.4.0 model' };
+    const titles: Record<string, string> = { '/': 'An open AI that improves itself', '/baseline/join': 'Join the 0.4.0 baseline', '/chat': '0.4.0 inference demo', '/ledger': '0.4.0 ledger', '/model': '0.4.0 model' };
     document.title = `${titles[pathname] || 'Open, shared intelligence'} | NeuroShard`;
     const frame = requestAnimationFrame(() => {
       if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
@@ -130,11 +122,20 @@ export default function NativeApp() {
       <Route path="/" element={<Home />} />
       {['/network', '/assistant', '/run', '/explore', '/download'].map(p => <Route key={p} path={p} element={<Navigate to="/#network" replace />} />)}
       <Route path="/join" element={<Navigate to="/#join" replace />} />
-      <Route path="/vision" element={<Vision />} /><Route path="/teams" element={<Teams />} /><Route path="/build" element={<GetInvolved />} />
-      <Route path="/protocol" element={<Protocol />} /><Route path="/whitepaper" element={<Protocol />} />
+      {['/vision', '/teams', '/build', '/protocol', '/whitepaper'].map(p => <Route key={p} path={p} element={<Navigate to="/" replace />} />)}
       <Route path="/baseline" element={<NetworkOverview connection={connection} />} /><Route path="/baseline/join" element={<Join connection={connection} />} />
       <Route path="/ledger" element={<Ledger connection={connection} />} /><Route path="/model" element={<Model />} /><Route path="/chat" element={<Chat />} />
       <Route path="*" element={<section className="native-wrap native-page"><h1>Page not found.</h1><Link className="native-button" to="/">Go to the homepage <ArrowRight size={16} /></Link></section>} />
     </Routes></main>
-    <footer className="site-footer"><span>NeuroShard · open source, Apache 2.0</span><div><Link to="/protocol">Research</Link><Link to="/vision">Vision</Link><Link to="/teams">For teams</Link><a href="https://docs.neuroshard.com">Docs</a><a href="mailto:info@neuroshard.com">Contact</a></div></footer></div>;
+    <footer className="site-footer">
+      <div className="footer-brand"><strong>NeuroShard</strong><span>Open source · Apache 2.0</span></div>
+      <nav aria-label="Footer">
+        <a href={`${SOURCE}/blob/main/docs/OPERATORS.md`}>Operator guide</a>
+        <a href={`${SOURCE}/blob/main/docs/NETWORK_GROWTH.md`}>How it grows</a>
+        <a href={`${SOURCE}/blob/main/docs/DECENTRALIZATION.md`}>Decentralization</a>
+        <a href={asset('/papers/FINE2026_neuroshard_short.pdf')}>Paper</a>
+        <a href={SOURCE}>Source code</a>
+        <a href="mailto:info@neuroshard.com">Contact</a>
+      </nav>
+    </footer></div>;
 }
