@@ -235,7 +235,8 @@ export default function AssistantNetworkPage() {
       <p><a className="native-text-link" href={OPERATORS}>Operator guide: roles, earnings, risks <ExternalLink size={14} /></a></p>
       <p><a className="native-text-link" href={`${SOURCE}/blob/main/docs/NETWORK_GROWTH.md`}>How the network grows itself, with every result <ExternalLink size={14} /></a></p>
       <p><a className="native-text-link" href={`${SOURCE}/blob/main/docs/DECENTRALIZATION.md`}>What is decentralized, and what is not yet <ExternalLink size={14} /></a></p>
-      <p><a className="native-text-link" href={`${SOURCE}/issues/new?title=Operator:%20`}>Tell us you are joining (GitHub issue) <ExternalLink size={14} /></a></p>
+      <p><a className="native-text-link" href={`${SOURCE}/issues/new?template=operator.yml`}>Tell us you are joining (GitHub issue) <ExternalLink size={14} /></a></p>
+      <p><a className="native-text-link" href={`${SOURCE}/issues/new?template=join_problem.yml`}>Report a join problem <ExternalLink size={14} /></a></p>
       <p className="muted"><Eye size={13} /> Everything on this page is read from the chain through several validators and cross-checked. Run <code>neuroshard assistant status</code> to read it yourself.</p>
     </div></section>
   </section>;
