@@ -2,12 +2,12 @@
 
 The website for [NeuroShard](https://github.com/neuroshard-ai/neuroshard): a React/Vite app.
 
-- **`/network`** — the live assistant network: status, how it works, one-command join, a key lookup,
-  the live ledger, an FAQ, the roadmap, and what works and what doesn't yet. It reads the read-only
-  explorer API at `/assistant/` (`python -m neuroshard.assistant.explorer` in the main repo), which
-  cross-checks several validators' RPCs and holds no keys.
-- **`/`** — the vision.
-- **`/baseline`, `/baseline/join`, `/chat`, `/ledger`, `/model`** — the earlier 0.4.0 testnet, kept as is.
+- **`/`**: the whole product on one page: what it is, how it works, joining in one command, a node
+  check, the live network and an FAQ. It reads the read-only explorer API at `/assistant/`
+  (`python -m neuroshard.assistant.explorer` in the main repo), which cross-checks the validators' RPCs
+  and holds no keys. `/network` and `/join` redirect to its sections.
+- **`/vision`, `/teams`, `/build`, `/protocol`**: longer background pages, linked from the footer.
+- **`/baseline`, `/baseline/join`, `/chat`, `/ledger`, `/model`**: the earlier 0.4.0 testnet, kept as it was.
 
 ## Develop
 
