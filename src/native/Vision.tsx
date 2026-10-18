@@ -65,7 +65,7 @@ export default function Vision() {
         <h1>Own your AI.<br /><em>Grow it<br className="hero-line" /> together.</em></h1>
         <p>AI people can own. AI businesses can build on. AI that gets better through the people who contribute to it.</p>
         <p className="vision-intro">NeuroShard is building a living, decentralized intelligence: one open model, distributed across machines, improved through verified learning.</p>
-        <div className="native-actions"><Link className="native-button" to="/network#join">Join the network <ArrowRight size={17} /></Link><Link className="native-button secondary" to="/network">See it live <ArrowRight size={16} /></Link></div>
+        <div className="native-actions"><Link className="native-button" to="/#join">Join the network <ArrowRight size={17} /></Link><Link className="native-button secondary" to="/">See it live <ArrowRight size={16} /></Link></div>
         <p className="vision-live"><span className="vision-signal" /> Live now: an open test network where anyone can run a validator, host a shard, audit or train — and the network grew a better model by itself.</p>
         <div className="vision-hero-foot"><span>OPEN SOURCE</span><span>SHARDED COMPUTE</span><span>NATIVE CONSENSUS</span></div>
       </div>
@@ -81,7 +81,7 @@ export default function Vision() {
     <section className="vision-audiences native-wrap">
       <div className="section-heading"><div><div className="native-eyebrow">WHAT WE’RE BUILDING</div><h2>Your part in a bigger intelligence.</h2></div><p>One open foundation. Different ways to put it to work.</p></div>
       <div className="audience-grid">
-        <article><Cpu size={26} /><span className="card-kicker">FOR PEOPLE</span><h3>Put your hardware<br />to work.</h3><p>Contribute compute to training, verification, and serving. Earn NEURO for accepted work and use it to access the network.</p><Link className="native-text-link" to="/network#join">Run a node <ArrowRight size={16} /></Link></article>
+        <article><Cpu size={26} /><span className="card-kicker">FOR PEOPLE</span><h3>Put your hardware<br />to work.</h3><p>Contribute compute to training, verification, and serving. Earn NEURO for accepted work and use it to access the network.</p><Link className="native-text-link" to="/#join">Run a node <ArrowRight size={16} /></Link></article>
         <article className="audience-featured"><Layers size={26} /><span className="card-kicker">FOR TEAMS</span><h3>Your AI.<br />Your infrastructure.</h3><p>Our product direction: run AI on machines you control, connect more hardware as your needs grow, and develop capabilities for your work.</p><Link className="native-text-link" to="/teams">See the direction for teams <ArrowRight size={16} /></Link></article>
         <article><Globe2 size={26} /><span className="card-kicker">FOR BUILDERS</span><h3>Build on<br />an open foundation.</h3><p>Create applications, compatible hardware, and tools for a shared AI network. Help shape how useful contributions are learned, verified, and rewarded.</p><Link className="native-text-link" to="/build">Build with NeuroShard <ArrowRight size={16} /></Link></article>
       </div>
@@ -103,10 +103,10 @@ export default function Vision() {
         <a href={`${SOURCE}/blob/main/docs/NETWORK_GROWTH.md`}><Network size={20} /><h3>A network that improved itself</h3><p>Usage funded training; owners verified the data, reproduced the test and voted; every node switched. The new module answers 294 of 452 real requests, against 214 for the base model.</p><span>Read how it grew <ExternalLink size={13} /></span></a>
         <a href={`${SOURCE}/blob/main/docs/NATIVE_EXPERT_LIVE_RESULT.md`}><ShieldCheck size={20} /><h3>Native rewards and payments</h3><p>Verified training, a separate quality decision, and inference paid with earned NEURO.</p><span>Follow the complete lifecycle <ExternalLink size={13} /></span></a>
       </div>
-      <p className="evidence-scope">The live network is an open test network: its tokens have no value, and most of its nodes are still run by the project. <Link to="/network">See exactly what works and what doesn’t yet →</Link></p>
+      <p className="evidence-scope">The live network is an open test network: its tokens have no value, and most of its nodes are still run by the project. <Link to="/">See exactly what works and what doesn’t yet →</Link></p>
     </section>
 
-    <section className="vision-invitation native-wrap"><div className="native-eyebrow">HELP BUILD WHAT COMES NEXT</div><h2>The network starts<br />with people like you.</h2><p>Bring a machine. Bring a use case. Bring a new idea.<br />Help build AI that we can own and improve together.</p><div className="native-actions"><Link className="native-button" to="/network#join">Join the network <ArrowRight size={17} /></Link><a className="native-button secondary" href={SOURCE}>Explore the source <ExternalLink size={16} /></a></div></section>
+    <section className="vision-invitation native-wrap"><div className="native-eyebrow">HELP BUILD WHAT COMES NEXT</div><h2>The network starts<br />with people like you.</h2><p>Bring a machine. Bring a use case. Bring a new idea.<br />Help build AI that we can own and improve together.</p><div className="native-actions"><Link className="native-button" to="/#join">Join the network <ArrowRight size={17} /></Link><a className="native-button secondary" href={SOURCE}>Explore the source <ExternalLink size={16} /></a></div></section>
   </div>;
 }
 
@@ -134,7 +134,7 @@ export function GetInvolved() {
     <p className="vision-lede">We’re bringing together the people, hardware, and ideas to build a living, decentralized AI. Choose where you want to contribute.</p>
     <div className="involvement-grid">
       <article><span className="card-kicker">TEAMS & HARDWARE PARTNERS</span><h2>Build the first<br />deployments.</h2><p>Help turn sharded AI into a useful installation for real work. Bring a workload, your hardware requirements, and what successful expansion would look like.</p><a className="native-button" href={CONTACT}>Talk to the team <ArrowRight size={15} /></a><small><a href="mailto:info@neuroshard.com">info@neuroshard.com</a> · Start with a non-confidential overview.</small></article>
-      <article><span className="card-kicker">OPERATORS & CONTRIBUTORS</span><h2>Put the network<br />to work.</h2><p>Run the published software, reproduce the results, and help exercise participation across independently controlled machines.</p><Link className="native-button secondary" to="/network#join">Join in one command <ArrowRight size={15} /></Link><small>Validator, owner, auditor or contributor. Roles, earnings and risks are on the network page.</small></article>
+      <article><span className="card-kicker">OPERATORS & CONTRIBUTORS</span><h2>Put the network<br />to work.</h2><p>Run the published software, reproduce the results, and help exercise participation across independently controlled machines.</p><Link className="native-button secondary" to="/#join">Join in one command <ArrowRight size={15} /></Link><small>Validator, owner, auditor or contributor. Roles, earnings and risks are on the network page.</small></article>
       <article><span className="card-kicker">ENGINEERS & RESEARCHERS</span><h2>Push the<br />architecture forward.</h2><p>Work on sharding, useful learning, verification, routing, and resilient operation. The implementation and evidence are open.</p><a className="native-button secondary" href={`${SOURCE}/blob/main/CONTRIBUTING.md`}>Start contributing <ExternalLink size={15} /></a><small>Apache 2.0 · Follow the repository’s contribution guide.</small></article>
     </div>
     <section className="involvement-note"><h2>Build a network.<br />Build a business.</h2><p>Our commercial direction is supported AI installations, compatible hardware, and managed services around an open protocol. The community can run the software and build its own products.</p></section>

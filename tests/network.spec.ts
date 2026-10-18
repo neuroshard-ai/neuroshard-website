@@ -28,39 +28,37 @@ async function fixtures(page: Page) {
   });
 }
 
-test('the live network page shows status, how to join, the ledger and the honest limits', async ({ page }) => {
+test('the home page is the live network: status, how it works, joining and the ledger', async ({ page }) => {
   await fixtures(page);
-  await page.goto('/network');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('An AI that grows itself');
-  await expect(page.getByText('5 of 5 validator RPCs agree')).toBeVisible();
-  await expect(page.getByText('4 signed the last block')).toBeVisible();
-  await expect(page.getByText('801,234', { exact: true })).toBeVisible();
-  await expect(page.getByText('0.423', { exact: true })).toBeVisible();
-  await expect(page.getByText('curl -LsSf https://neuroshard.com/join.sh | bash -s -- check')).toBeVisible();
-  await page.getByRole('tab', { name: 'Owner' }).click();
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('An open AI that');
+  await expect(page.getByText('Live now · block 801,234 · 5 validators · 2 owners · model version 1')).toBeVisible();
   await expect(page.getByText('curl -LsSf https://neuroshard.com/join.sh | bash -s -- owner --shard 2')).toBeVisible();
-  await expect(page.getByText('Your 5 NEURO bond if an auditor proves you sent wrong work')).toBeVisible();
-  await expect(page.getByText('slashed', { exact: true })).toBeVisible();
-  await expect(page.getByText('enacted by owner vote (100% of bonded weight)')).toBeVisible();
-  await expect(page.getByText('Growth job trained')).toBeVisible();
-  await expect(page.getByText(/Independent operators — today the project runs almost every node/)).toBeVisible();
+  await page.getByRole('tab', { name: 'Validator' }).click();
+  await expect(page.getByText('curl -LsSf https://neuroshard.com/join.sh | bash -s -- validator')).toBeVisible();
+  await expect(page.getByText('curl -LsSf https://neuroshard.com/join.sh | bash -s -- check')).toBeVisible();
+  await expect(page.getByText('4 of 5 signing')).toBeVisible();
+  await expect(page.getByText('0.423 NEURO')).toBeVisible();
+  await expect(page.getByText('owners earned 0.17699 NEURO')).toBeVisible();
+  await expect(page.getByText('128 steps committed')).toBeVisible();
+  await page.getByText('How far along is it?').click();
+  await expect(page.getByText(/the project still runs most nodes/)).toBeVisible();
 });
 
 test('a node operator can check a public key', async ({ page }) => {
   await fixtures(page);
-  await page.goto('/network');
-  await page.getByLabel('Public key').fill('d'.repeat(64));
-  await page.getByRole('button', { name: 'Look up' }).click();
-  await expect(page.getByText('Owner of shard 2 ·')).toBeVisible();
-  await expect(page.getByText(/served 5 conversation\(s\) · earned 0.443845 NEURO/)).toBeVisible();
-  await expect(page.getByText(/open TCP 28700/)).toBeVisible();
+  await page.goto('/');
+  await page.getByLabel(/Paste its public key/).fill('d'.repeat(64));
+  await page.getByRole('button', { name: 'Check' }).click();
+  await expect(page.getByText(/Owner of shard 2, active\. Served 5 conversation\(s\), earned 0\.443845 NEURO\. Not reachable: open TCP port 28700\./)).toBeVisible();
 });
 
-test('the home page and old join paths lead to the live network', async ({ page }) => {
+test('old addresses lead to the right part of the home page', async ({ page }) => {
   await fixtures(page);
-  await page.goto('/');
-  await page.getByRole('link', { name: 'Join the network' }).first().click();
-  await expect(page).toHaveURL(/\/network#join$/);
+  await page.goto('/network');
+  await expect(page).toHaveURL(/\/#network$/);
   await page.goto('/join');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('An AI that grows itself');
+  await expect(page).toHaveURL(/\/#join$/);
+  await page.getByRole('navigation').getByRole('link', { name: 'Join', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Join in one command.' })).toBeVisible();
 });

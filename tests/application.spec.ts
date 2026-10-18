@@ -68,8 +68,8 @@ test('mobile navigation and sponsor failure remain usable', async ({page}) => {
   await page.setViewportSize({width: 390, height: 844}); await fixtures(page);
   await page.route('**/work/status', route => route.fulfill({status: 503, json: {error: 'Sponsor offline'}}));
   await page.goto('/'); await page.getByRole('button', {name: 'Toggle navigation'}).click();
-  await page.locator('nav').getByRole('link', {name: 'Live network', exact: true}).click();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('An AI that grows itself');
+  await page.locator('nav').getByRole('link', {name: 'Network', exact: true}).click();
+  await expect(page.getByRole('heading', { name: 'The network, live.' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.goto('/baseline/join');
   await expect(page.getByText('Sponsor currently unavailable')).toBeVisible();

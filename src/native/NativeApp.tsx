@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ArrowRight, Check, Copy, ExternalLink, Menu, RefreshCw, Terminal, X } from 'lucide-react';
 import { asset, Block, get, Network, neuro, short } from './api';
 import logo from '../assets/logo_white.png';
@@ -9,7 +9,7 @@ import releaseNetwork from '../networks/llm-testnet.json';
 import Chat from './Chat';
 import { SponsorStatus, Validators } from './Participation';
 import Vision, { Teams, GetInvolved, ALPHA_GUIDE } from './Vision';
-import AssistantNetworkPage from './AssistantNetwork';
+import Home from './Home';
 
 const SOURCE = 'https://github.com/neuroshard-ai/neuroshard';
 function useNetwork() {
@@ -109,7 +109,7 @@ function Protocol() {
 function RoutePosition() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    const titles: Record<string, string> = { '/': 'Own your AI. Grow it together.', '/teams': 'AI for your team', '/build': 'Build with NeuroShard', '/explore': 'Explore the networks', '/protocol': 'Architecture & research', '/join': 'Join the network', '/network': 'The live network', '/baseline/join': 'Join the 0.4.0 baseline', '/chat': '0.4.0 inference demo', '/ledger': '0.4.0 ledger', '/model': '0.4.0 model' };
+    const titles: Record<string, string> = { '/': 'An open AI that improves itself', '/vision': 'Vision', '/teams': 'AI for your team', '/build': 'Build with NeuroShard', '/explore': 'Explore the networks', '/protocol': 'Architecture & research', '/join': 'Join the network', '/baseline/join': 'Join the 0.4.0 baseline', '/chat': '0.4.0 inference demo', '/ledger': '0.4.0 ledger', '/model': '0.4.0 model' };
     document.title = `${titles[pathname] || 'Open, shared intelligence'} | NeuroShard`;
     const frame = requestAnimationFrame(() => {
       if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
@@ -124,8 +124,17 @@ export default function NativeApp() {
   const { pathname } = useLocation();
   const baseline = ['/baseline/join', '/chat', '/ledger', '/model'].includes(pathname);
   return <div className="native-app"><RoutePosition /><a className="skip-to-content" href="#main">Skip to content</a>
-    <header className="native-header"><Link to="/" className="native-brand" onClick={() => setMenu(false)}><img src={logo} alt="" /><span>NeuroShard</span></Link><button className="mobile-menu" aria-label="Toggle navigation" aria-expanded={menu} aria-controls="primary-navigation" onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button><nav id="primary-navigation" className={menu ? 'open' : ''} onClick={() => setMenu(false)}><NavLink to="/" end>Vision</NavLink><NavLink to="/network">Live network</NavLink><NavLink to="/teams">For teams</NavLink><NavLink to="/protocol">Research</NavLink><a href={SOURCE}>GitHub <ExternalLink size={12} /></a><Link className="nav-join" to="/network#join">Join the network <ArrowRight size={14} /></Link></nav></header>
-    {baseline && <div className="baseline-banner"><div className="native-wrap"><span>0.4.0 baseline · Earlier CPU testnet · Public data</span><Link to="/network">This is the earlier 0.4.0 testnet. The live network is here →</Link></div></div>}
-    <main id="main"><Routes><Route path="/" element={<Vision />} /><Route path="/network" element={<AssistantNetworkPage />} /><Route path="/assistant" element={<AssistantNetworkPage />} /><Route path="/run" element={<AssistantNetworkPage />} /><Route path="/teams" element={<Teams />} /><Route path="/build" element={<GetInvolved />} /><Route path="/explore" element={<AssistantNetworkPage />} /><Route path="/baseline" element={<NetworkOverview connection={connection} />} /><Route path="/join" element={<AssistantNetworkPage />} /><Route path="/baseline/join" element={<Join connection={connection} />} /><Route path="/ledger" element={<Ledger connection={connection} />} /><Route path="/protocol" element={<Protocol />} /><Route path="/model" element={<Model />} /><Route path="/chat" element={<Chat />} /><Route path="/whitepaper" element={<Protocol />} /><Route path="/download" element={<AssistantNetworkPage />} /><Route path="*" element={<section className="native-wrap native-page"><h1>Page not found.</h1><p>Explore the NeuroShard vision, research, and network.</p><Link className="native-button" to="/">Go to homepage <ArrowRight size={16} /></Link></section>} /></Routes></main>
-    <footer className="native-footer native-wrap"><Link to="/" className="native-brand"><img src={logo} alt="" />NeuroShard</Link><span>Open code. Shared ambition.</span><div className="footer-links"><a href={SOURCE + '/blob/main/LICENSE'}>Apache 2.0</a><a href="https://docs.neuroshard.com">Docs</a><Link to="/network#ledger">Ledger</Link><a href="mailto:info@neuroshard.com">Contact</a></div></footer></div>;
+    <header className="native-header"><Link to="/" className="native-brand" onClick={() => setMenu(false)}><img src={logo} alt="" /><span>NeuroShard</span></Link><button className="mobile-menu" aria-label="Toggle navigation" aria-expanded={menu} aria-controls="primary-navigation" onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button><nav id="primary-navigation" className={menu ? 'open' : ''} onClick={() => setMenu(false)}><Link to="/#how">How it works</Link><Link to="/#network">Network</Link><Link to="/#faq">FAQ</Link><a href={SOURCE}>GitHub</a><Link className="nav-join" to="/#join">Join</Link></nav></header>
+    {baseline && <div className="baseline-banner"><div className="native-wrap"><span>0.4.0 baseline · Earlier CPU testnet · Public data</span><Link to="/">This is the earlier 0.4.0 testnet. The live network is here →</Link></div></div>}
+    <main id="main"><Routes>
+      <Route path="/" element={<Home />} />
+      {['/network', '/assistant', '/run', '/explore', '/download'].map(p => <Route key={p} path={p} element={<Navigate to="/#network" replace />} />)}
+      <Route path="/join" element={<Navigate to="/#join" replace />} />
+      <Route path="/vision" element={<Vision />} /><Route path="/teams" element={<Teams />} /><Route path="/build" element={<GetInvolved />} />
+      <Route path="/protocol" element={<Protocol />} /><Route path="/whitepaper" element={<Protocol />} />
+      <Route path="/baseline" element={<NetworkOverview connection={connection} />} /><Route path="/baseline/join" element={<Join connection={connection} />} />
+      <Route path="/ledger" element={<Ledger connection={connection} />} /><Route path="/model" element={<Model />} /><Route path="/chat" element={<Chat />} />
+      <Route path="*" element={<section className="native-wrap native-page"><h1>Page not found.</h1><Link className="native-button" to="/">Go to the homepage <ArrowRight size={16} /></Link></section>} />
+    </Routes></main>
+    <footer className="site-footer"><span>NeuroShard · open source, Apache 2.0</span><div><Link to="/protocol">Research</Link><Link to="/vision">Vision</Link><Link to="/teams">For teams</Link><a href="https://docs.neuroshard.com">Docs</a><a href="mailto:info@neuroshard.com">Contact</a></div></footer></div>;
 }
