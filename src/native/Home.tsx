@@ -48,7 +48,7 @@ function Join() {
   const role = roles.find(r => r.id === active)!;
   return <section className="section" id="join">
     <h2>Join in one command.</h2>
-    <p className="lede">Pick a role and run one line on a Linux machine you control. It installs everything, makes your keys on your machine, and starts. No sign-up, no approval.</p>
+    <p className="lede">Pick a role and run one line on a Linux machine you control. It installs everything, makes your keys on your machine, and starts. No sign-up: you serve and earn from the start.</p>
     <div className="roles" role="tablist">{roles.map(r => <button key={r.id} role="tab" aria-selected={active === r.id} onClick={() => setActive(r.id)}>{r.name}</button>)}</div>
     <div className="role">
       <Command text={`${JOIN} ${role.cmd}`} />
@@ -114,7 +114,9 @@ const faq: [string, string][] = [
   ['Is it private?', 'No. Model activations pass between machines and the ledger is public. Use example data.'],
   ['Why an Intel CPU with AMX?', 'Every piece of work is checked by re-running it exactly. Today that only works on one class of hardware; other chips give slightly different numbers that would look like cheating.'],
   ['How fast is it?', 'About 35 seconds per reply, running on CPUs.'],
-  ['Who decides what the model learns?', 'Owners, by vote. An update only goes live if it beats the current model on a test chosen after training, which owners reproduce themselves. No single key can change the model — including ours.'],
+  ['Who decides what the model learns?', 'Members, by vote. An update only goes live if it beats the current model on a test chosen after training, which members reproduce themselves. No single key can change the model, including ours.'],
+  ['Do I get a vote when I join?', 'Not straight away. Anyone can bond and serve, but free test tokens must not buy control, so a bond becomes a vote only when the existing members admit you. Tell us you joined and ask.'],
+  ['Is it safe to join?', 'It is an operator pilot. An independent review on October 18, 2026 found integrity bugs that made an open beta unsafe. They are fixed, tested and live; the review and every fix are public. Use test data only.'],
   ['What’s next?', 'More independent operators; learning from real conversations people choose to share; a reason to run a node beyond test tokens; and checking work on more kinds of hardware.'],
 ];
 
