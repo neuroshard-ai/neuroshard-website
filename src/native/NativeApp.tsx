@@ -8,8 +8,10 @@ import Model from './Model';
 import releaseNetwork from '../networks/llm-testnet.json';
 import Chat from './Chat';
 import { SponsorStatus, Validators } from './Participation';
+import { DOCS } from './release';
 const ALPHA_GUIDE = 'https://docs.neuroshard.com/generated/JOIN_ALPHA';
 import Home from './Home';
+import Help from './Help';
 
 const SOURCE = 'https://github.com/neuroshard-ai/neuroshard';
 function useNetwork() {
@@ -101,7 +103,7 @@ function Ledger({ connection }: { connection: Connection }) {
 function RoutePosition() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    const titles: Record<string, string> = { '/': 'An open AI that improves itself', '/baseline/join': 'Join the 0.4.0 baseline', '/chat': '0.4.0 inference demo', '/ledger': '0.4.0 ledger', '/model': '0.4.0 model' };
+    const titles: Record<string, string> = { '/': 'An open AI that improves itself', '/help': 'Help', '/baseline/join': 'Join the 0.4.0 baseline', '/chat': '0.4.0 inference demo', '/ledger': '0.4.0 ledger', '/model': '0.4.0 model' };
     document.title = `${titles[pathname] || 'Open, shared intelligence'} | NeuroShard`;
     const frame = requestAnimationFrame(() => {
       if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
@@ -116,10 +118,12 @@ export default function NativeApp() {
   const { pathname } = useLocation();
   const baseline = ['/baseline/join', '/chat', '/ledger', '/model'].includes(pathname);
   return <div className="native-app"><RoutePosition /><a className="skip-to-content" href="#main">Skip to content</a>
-    <header className="native-header"><Link to="/" className="native-brand" onClick={() => setMenu(false)}><img src={logo} alt="" /><span>NeuroShard</span></Link><button className="mobile-menu" aria-label="Toggle navigation" aria-expanded={menu} aria-controls="primary-navigation" onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button><nav id="primary-navigation" className={menu ? 'open' : ''} onClick={() => setMenu(false)}><Link to="/#how">How it works</Link><Link to="/#network">Network</Link><Link to="/#faq">FAQ</Link><a href={SOURCE}>GitHub</a><Link className="nav-join" to="/#join">Join</Link></nav></header>
+    <header className="native-header"><Link to="/" className="native-brand" onClick={() => setMenu(false)}><img src={logo} alt="" /><span>NeuroShard</span></Link><button className="mobile-menu" aria-label="Toggle navigation" aria-expanded={menu} aria-controls="primary-navigation" onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button><nav id="primary-navigation" className={menu ? 'open' : ''} onClick={() => setMenu(false)}><Link to="/#how">How it works</Link><Link to="/#join">Run a node</Link><Link to="/#faq">FAQ</Link><Link to="/help">Help</Link><a href={SOURCE}>GitHub</a><Link className="nav-join" to="/#try">Try it</Link></nav></header>
     {baseline && <div className="baseline-banner"><div className="native-wrap"><span>0.4.0 baseline · Earlier CPU testnet · Public data</span><Link to="/">This is the earlier 0.4.0 testnet. The live network is here →</Link></div></div>}
     <main id="main"><Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/help" element={<Help />} />
+      {['/support', '/troubleshooting', '/start', '/try'].map(p => <Route key={p} path={p} element={<Navigate to={p === '/support' || p === '/troubleshooting' ? '/help' : '/#try'} replace />} />)}
       {['/network', '/assistant', '/run', '/explore', '/download'].map(p => <Route key={p} path={p} element={<Navigate to="/#network" replace />} />)}
       <Route path="/join" element={<Navigate to="/#join" replace />} />
       {['/vision', '/teams', '/build', '/protocol', '/whitepaper'].map(p => <Route key={p} path={p} element={<Navigate to="/" replace />} />)}
@@ -130,9 +134,10 @@ export default function NativeApp() {
     <footer className="site-footer">
       <div className="footer-brand"><strong>NeuroShard</strong><span>Open source · Apache 2.0</span></div>
       <nav aria-label="Footer">
-        <a href={`${SOURCE}/blob/main/docs/OPERATORS.md`}>Operator guide</a>
-        <a href={`${SOURCE}/blob/main/docs/NETWORK_GROWTH.md`}>How it grows</a>
-        <a href={`${SOURCE}/blob/main/docs/DECENTRALIZATION.md`}>Decentralization</a>
+        <Link to="/help">Help</Link>
+        <a href={`${DOCS}/OPERATORS.md`}>Operator guide</a>
+        <a href={`${DOCS}/NETWORK_GROWTH.md`}>How it grows</a>
+        <a href={`${DOCS}/DECENTRALIZATION.md`}>Decentralization</a>
         <a href={asset('/papers/FINE2026_neuroshard_short.pdf')}>Paper</a>
         <a href={SOURCE}>Source code</a>
         <a href="mailto:info@neuroshard.com">Contact</a>
