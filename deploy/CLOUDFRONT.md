@@ -10,8 +10,8 @@
   - nginx serves just three GET endpoints, validates the lookup key and rate-limits per viewer.
   - The explorer runs as an unprivileged, sandboxed systemd user. IMDSv2 is required, and the disk is encrypted.
 - **CloudFront:** HTTPS only, TLS 1.2+, HTTP/2 and 3, the same security headers the tests enforce, an SPA rewrite,
-  `/join.sh` pinned to the release tag, and AWS WAF (managed common, known-bad-inputs and IP-reputation rules, plus a
-  per-IP rate limit). The template is `cloudfront.yaml`.
+  `/join.sh` pinned to the release tag, and AWS Shield Standard DDoS protection (included). AWS WAF (managed
+  rules plus a per-IP rate limit, about $9-10 a month) is optional: add `EnableWaf=true` to the parameters. The template is `cloudfront.yaml`.
 
 **What an administrator with CloudFront, ACM, WAF and Route 53 rights does once:**
 1. Request an ACM certificate in us-east-1 for `neuroshard.com` and `www.neuroshard.com`, and validate it by DNS

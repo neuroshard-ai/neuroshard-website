@@ -1,11 +1,16 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
   neuroshard.com on CloudFront. The static site comes from a private S3 bucket (Origin Access Control, no public
-  bucket). DNS is NOT changed by this stack: test on the CloudFront domain first, then switch the records.
+  bucket). Optional AWS WAF (EnableWaf=true). DNS is NOT changed by this stack: test on the CloudFront domain first, then switch the records.
   /assistant/* (the read-only live-network API) comes from a small locked-down explorer instance that only
   CloudFront can reach. Security headers, HTTPS only, TLS 1.2+, AWS managed WAF rules and a per-IP rate limit.
 
 Parameters:
+  EnableWaf:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: AWS WAF managed rules and a per-IP rate limit (about $9-10/month). Off by default; the static site has no server code, and the explorer origin rate-limits and validates input itself.
   Bucket:
     Type: String
     Default: neuroshard-website-633665787904
@@ -15,6 +20,9 @@ Parameters:
   CertificateArn:
     Type: String
     Description: ACM certificate in us-east-1 covering neuroshard.com and www.neuroshard.com
+
+Conditions:
+  UseWaf: !Equals [!Ref EnableWaf, 'true']
 
 Resources:
   OAC:
@@ -71,6 +79,7 @@ Resources:
 
   Waf:
     Type: AWS::WAFv2::WebACL
+    Condition: UseWaf
     Properties:
       Name: neuroshard-website
       Scope: CLOUDFRONT
@@ -108,7 +117,7 @@ Resources:
         IPV6Enabled: true
         PriceClass: PriceClass_100
         DefaultRootObject: index.html
-        WebACLId: !GetAtt Waf.Arn
+        WebACLId: !If [UseWaf, !GetAtt Waf.Arn, !Ref AWS::NoValue]
         ViewerCertificate: { AcmCertificateArn: !Ref CertificateArn, SslSupportMethod: sni-only, MinimumProtocolVersion: TLSv1.2_2021 }
         Origins:
           - Id: site
