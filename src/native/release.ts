@@ -9,7 +9,7 @@ export const join = (role: string) => `curl -LsSf ${INSTALLER} | bash -s -- ${ro
 export const CHAT = '~/.venvs/neuroshard/bin/neuroshard assistant chat';
 export const EMAIL = 'info@neuroshard.com';
 // Community chat (Discord). Must be a never-expiring invite; empty hides it.
-export const COMMUNITY_URL = 'https://discord.gg/yS6jWpU5J';
+export const COMMUNITY_URL = 'https://discord.gg/zJ85Ffhkqa';
 
 /** A GitHub issue from the project's "Joining didn't work" form, with what we know already filled in. */
 export function helpIssue(command = '', what = '') {
