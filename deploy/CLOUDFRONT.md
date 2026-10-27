@@ -1,5 +1,15 @@
 # neuroshard.com on CloudFront
 
+**Live since 2026-10-27 03:57 UTC:**
+- **Stack and distribution:** stack `neuroshard-website`, distribution `E1IY4JY0EHW1JY` (`d1orjvmh0xnmha.cloudfront.net`).
+- **Certificate:** ACM `ce697bf4-5e03-4b28-9bf3-90176cb40f7d`, covering `neuroshard.com` and `www`, valid until May 2027;
+  ACM renews it automatically.
+- **DNS:** Route 53 zone `Z0091611COXPBJ08AVD0`; `neuroshard.com` and `www` have A and AAAA aliases to the distribution.
+- **Explorer origin:** `i-013a38af40d8c8c80`.
+- **WAF:** off (`EnableWaf=false`).
+- **Not moved:** `docs.neuroshard.com` stays on its own server.
+
+
 **Layout:**
 - **Static site:** a private S3 bucket (`neuroshard-website-633665787904`: public access blocked, encrypted,
   versioned), reachable only by CloudFront through Origin Access Control.
