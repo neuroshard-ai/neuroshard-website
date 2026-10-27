@@ -1,7 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
   neuroshard.com on CloudFront. The static site comes from a private S3 bucket (Origin Access Control, no public
-  bucket). /assistant/* (the read-only live-network API) comes from a small locked-down explorer instance that only
+  bucket). DNS is NOT changed by this stack: test on the CloudFront domain first, then switch the records.
+  /assistant/* (the read-only live-network API) comes from a small locked-down explorer instance that only
   CloudFront can reach. Security headers, HTTPS only, TLS 1.2+, AWS managed WAF rules and a per-IP rate limit.
 
 Parameters:
@@ -14,9 +15,6 @@ Parameters:
   CertificateArn:
     Type: String
     Description: ACM certificate in us-east-1 covering neuroshard.com and www.neuroshard.com
-  HostedZoneId:
-    Type: String
-    Description: Route 53 hosted zone of neuroshard.com
 
 Resources:
   OAC:
@@ -158,16 +156,8 @@ Resources:
             Resource: [!Sub 'arn:aws:s3:::${Bucket}', !Sub 'arn:aws:s3:::${Bucket}/*']
             Condition: { Bool: { 'aws:SecureTransport': 'false' } }
 
-  Apex:
-    Type: AWS::Route53::RecordSetGroup
-    Properties:
-      HostedZoneId: !Ref HostedZoneId
-      RecordSets:
-        - { Name: neuroshard.com., Type: A, AliasTarget: { DNSName: !GetAtt Distribution.DomainName, HostedZoneId: Z2FDTNDATAQYW2 } }
-        - { Name: neuroshard.com., Type: AAAA, AliasTarget: { DNSName: !GetAtt Distribution.DomainName, HostedZoneId: Z2FDTNDATAQYW2 } }
-        - { Name: www.neuroshard.com., Type: A, AliasTarget: { DNSName: !GetAtt Distribution.DomainName, HostedZoneId: Z2FDTNDATAQYW2 } }
-        - { Name: www.neuroshard.com., Type: AAAA, AliasTarget: { DNSName: !GetAtt Distribution.DomainName, HostedZoneId: Z2FDTNDATAQYW2 } }
-
 Outputs:
   DistributionId: { Value: !Ref Distribution }
-  DistributionDomain: { Value: !GetAtt Distribution.DomainName }
+  DistributionDomain:
+    Value: !GetAtt Distribution.DomainName
+    Description: Test the site here first, then point neuroshard.com and www at it (A/AAAA alias, zone Z2FDTNDATAQYW2)

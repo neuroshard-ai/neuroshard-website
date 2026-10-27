@@ -14,13 +14,17 @@
   per-IP rate limit). The template is `cloudfront.yaml`.
 
 **What an administrator with CloudFront, ACM, WAF and Route 53 rights does once:**
-1. Request an ACM certificate in us-east-1 for `neuroshard.com` and `www.neuroshard.com`, validated by DNS.
-2. Deploy the stack:
+1. Request an ACM certificate in us-east-1 for `neuroshard.com` and `www.neuroshard.com`, and validate it by DNS
+   (status **Issued**).
+2. Deploy the stack. **It doesn't touch DNS**, so the live site keeps running:
    ```bash
-   aws cloudformation deploy --region us-east-1 --stack-name neuroshard-website --template-file deploy/cloudfront.yaml \
-     --parameter-overrides CertificateArn=<arn> HostedZoneId=<zone> ExplorerOriginDomain=<explorer public DNS>
+   aws cloudformation deploy --region us-east-1 --stack-name neuroshard-website \
+     --template-file deploy/cloudfront.yaml \
+     --parameter-overrides CertificateArn=<certificate ARN> \
+       ExplorerOriginDomain=ec2-18-232-160-200.compute-1.amazonaws.com
    ```
-   The stack points the apex and `www` A/AAAA records at CloudFront. Until then the current server keeps serving.
-3. Check `https://neuroshard.com` and `/help` and the live status, then retire the site from the old host.
+3. Test on the CloudFront domain the stack outputs (`DistributionDomain`).
+4. Switch DNS: point `neuroshard.com` and `www.neuroshard.com` A and AAAA records at that domain, as aliases
+   (zone `Z2FDTNDATAQYW2`). Then retire the site from the old host.
 
 **Publishing a new version:** run `npm run build`, then `scripts/publish-s3.sh`, then a CloudFront invalidation of `/index.html`.
