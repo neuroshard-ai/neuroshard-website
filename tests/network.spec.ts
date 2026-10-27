@@ -28,46 +28,98 @@ async function fixtures(page: Page) {
   });
 }
 
-test('the home page is the live network: status, how it works, joining and the ledger', async ({ page }) => {
+test('the home page gets a user started: install, chat, what to expect, live status', async ({ page }) => {
   await fixtures(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('An open AI that');
   await expect(page.getByText('Live now · block 801,234 · 5 validators · 2 owners · model version 1')).toBeVisible();
-  await expect(page.getByText('curl -LsSf https://neuroshard.com/join.sh | bash -s -- owner --shard 2')).toBeVisible();
-  await page.getByRole('tab', { name: 'Validator' }).click();
-  await expect(page.getByText('curl -LsSf https://neuroshard.com/join.sh | bash -s -- validator')).toBeVisible();
-  await expect(page.getByText('curl -LsSf https://neuroshard.com/join.sh | bash -s -- check')).toBeVisible();
+  await page.getByRole('link', { name: 'Try it', exact: true }).first().click();
+  await expect(page.getByRole('heading', { name: 'Try it in about five minutes.' })).toBeVisible();
+  // The installer is pinned to the reviewed release, never main, and its checksum is shown.
+  await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- chat --branch pilot-2')).toBeVisible();
+  await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | sha256sum')).toBeVisible();
+  await expect(page.getByText('adf7b983d2c6b21ddfb2d9ed39d2234d0c3e5103e59777e508907d7d81bbd37c')).toBeVisible();
+  await expect(page.getByText('~/.venvs/neuroshard/bin/neuroshard assistant chat', { exact: true })).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('neuroshard.com/join.sh');
+  // The known limits are stated where a user decides to try it.
+  await expect(page.getByRole('heading', { name: 'It isn’t private' })).toBeVisible();
+  await expect(page.getByText(/116 of 233 answers had the right fact, and only 58 also cited the right document/)).toBeVisible();
+  await expect(page.getByText(/first answer takes about 50 seconds/)).toBeVisible();
   await expect(page.getByText('4 of 5 signing')).toBeVisible();
   await expect(page.getByText('0.423 NEURO')).toBeVisible();
   await expect(page.getByText('owners earned 0.17699 NEURO')).toBeVisible();
   await expect(page.getByText('128 steps committed')).toBeVisible();
-  await page.getByText('How far along is it?').click();
-  await expect(page.getByText(/the project still runs most nodes/)).toBeVisible();
+});
+
+test('operators see only the invited roles, with validators and contributors on hold', async ({ page }) => {
+  await fixtures(page);
+  await page.goto('/#join');
+  await expect(page.getByRole('tab')).toHaveText(['Owner', 'Auditor']);
+  await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- owner --shard 1 --branch pilot-2')).toBeVisible();
+  await page.getByRole('tab', { name: 'Auditor' }).click();
+  await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- auditor --branch pilot-2')).toBeVisible();
+  await expect(page.locator('.on-hold')).toContainText('running a validator, and contributing training');
+  await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- check', { exact: true })).toBeVisible();
 });
 
 test('a node operator can check a public key', async ({ page }) => {
   await fixtures(page);
   await page.goto('/');
   await page.getByLabel(/Paste its public key/).fill('d'.repeat(64));
-  await page.getByRole('button', { name: 'Check' }).click();
+  await page.getByRole('button', { name: 'Check', exact: true }).click();
   await expect(page.getByText(/Owner of shard 2, active\. Served 5 conversation\(s\), earned 0\.443845 NEURO\. Not reachable: open TCP port 28700\./)).toBeVisible();
 });
 
-test('old addresses lead to the right part of the home page', async ({ page }) => {
+test('the help page finds a message and explains the fix', async ({ page }) => {
+  await fixtures(page);
+  await page.goto('/');
+  await page.getByRole('navigation', { name: undefined }).getByRole('link', { name: 'Help', exact: true }).first().click();
+  await expect(page).toHaveURL(/\/help$/);
+  await page.getByPlaceholder('Paste or type part of the message').fill('stayed busy');
+  await expect(page.getByText('the network stayed busy until the deadline; nothing was funded')).toBeVisible();
+  await expect(page.getByText(/Nothing was paid\./)).toBeVisible();
+  await expect(page.locator('.fix')).toHaveCount(1);
+  await page.getByPlaceholder('Paste or type part of the message').fill('qwertyuiop');
+  await expect(page.getByText(/No match for that message/)).toBeVisible();
+});
+
+test('asking for help opens a prefilled GitHub request, without keys', async ({ page }) => {
+  await fixtures(page);
+  await page.goto('/help#ask');
+  await expect(page.getByText(/Never paste anything from files ending in \.key/)).toBeVisible();
+  await page.getByLabel(/What it printed/).fill('NeuroShard: the network stayed busy until the deadline; nothing was funded');
+  // GitHub sends a logged-out browser to its login page, so check the URL the page opens, not where it lands.
+  await page.evaluate(() => { (window as unknown as { opened: string[] }).opened = []; window.open = (u?: string | URL) => { (window as unknown as { opened: string[] }).opened.push(String(u)); return null; }; });
+  await page.getByRole('button', { name: 'Open a help request' }).click();
+  const url = new URL((await page.evaluate(() => (window as unknown as { opened: string[] }).opened))[0]);
+  expect(url.origin + url.pathname).toBe('https://github.com/neuroshard-ai/neuroshard/issues/new');
+  expect(url.searchParams.get('template')).toBe('join_problem.yml');
+  expect(url.searchParams.get('command')).toBe('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- chat --branch pilot-2');
+  expect(url.searchParams.get('log')).toContain('stayed busy');
+});
+
+test('old addresses lead to the right part of the site', async ({ page }) => {
   await fixtures(page);
   await page.goto('/network');
   await expect(page).toHaveURL(/\/#network$/);
   await page.goto('/join');
   await expect(page).toHaveURL(/\/#join$/);
-  await page.getByRole('navigation').getByRole('link', { name: 'Join', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Join in one command.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Run a node.' })).toBeVisible();
+  await page.goto('/support');
+  await expect(page).toHaveURL(/\/help$/);
+  await page.goto('/start');
+  await expect(page).toHaveURL(/\/#try$/);
 });
 
 test('the footer links only to current material, and retired pages lead home', async ({ page }) => {
   await fixtures(page);
   await page.goto('/');
   const footer = page.getByRole('navigation', { name: 'Footer' });
-  await expect(footer.getByRole('link')).toHaveText(['Operator guide', 'How it grows', 'Decentralization', 'Paper', 'Source code', 'Contact']);
+  await expect(footer.getByRole('link')).toHaveText(['Help', 'Operator guide', 'How it grows', 'Decentralization', 'Paper', 'Source code', 'Contact']);
+  for (const link of await footer.getByRole('link').all()) {
+    const href = await link.getAttribute('href');
+    if (href?.includes('/blob/')) expect(href).toContain('/blob/pilot-2/');
+  }
   for (const old of ['/vision', '/teams', '/build', '/protocol']) {
     await page.goto(old);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('An open AI that');
