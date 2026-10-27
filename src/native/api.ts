@@ -1,12 +1,3 @@
-export type Network = {
-  chain_id: string; height: number; round: number; model_root: string;
-  validator_count: number; issued: string; burned: string; initial_supply: string;
-  profile: string; ready: boolean; stalled: boolean; genesis_sha256: string; latest_block_hash: string; latest_block_height: number;
-  latest_block_time: string; bootstrap_peers: string[];
-};
-export type Block = { height: number; hash: string; time: string; app_hash: string; app_state_height: number;
-  transactions: { hash: string; kind: string; sender: string; code: number; log: string; body: Record<string, unknown> }[] };
-
 export const asset = (path: string) => import.meta.env.BASE_URL + path.replace(/^\//, '');
 
 export async function get<T>(path: string): Promise<T> {
