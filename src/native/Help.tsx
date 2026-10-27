@@ -73,7 +73,7 @@ function Ask() {
     <p className="hint">The request also asks for your machine check, which installs nothing:</p>
     <Command text={join('check')} />
     <div className="help ask-other">
-      {COMMUNITY_URL && <a href={COMMUNITY_URL}><b>Community chat</b><span>Ask other users and the team.</span><ExternalLink size={15} /></a>}
+      {COMMUNITY_URL && <a href={COMMUNITY_URL}><b>Discord</b><span>Ask other users and the team in the community chat.</span><ExternalLink size={15} /></a>}
       <a href={`mailto:${EMAIL}?subject=NeuroShard%20help`}><b>Email</b><span>{EMAIL}: we answer within a working day during the pilot.</span><ExternalLink size={15} /></a>
       <a href={`${DOCS}/OPERATORS.md`}><b>Operator guide</b><span>For owners and auditors: joining, upgrading, leaving.</span><ExternalLink size={15} /></a>
     </div>

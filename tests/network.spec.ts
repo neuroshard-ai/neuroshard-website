@@ -115,7 +115,7 @@ test('the footer links only to current material, and retired pages lead home', a
   await fixtures(page);
   await page.goto('/');
   const footer = page.getByRole('navigation', { name: 'Footer' });
-  await expect(footer.getByRole('link')).toHaveText(['Help', 'Operator guide', 'How it grows', 'Decentralization', 'Paper', 'Source code', 'Contact']);
+  await expect(footer.getByRole('link')).toHaveText(['Help', 'Operator guide', 'How it grows', 'Decentralization', 'Paper', 'Source code', 'Discord', 'Contact']);
   for (const link of await footer.getByRole('link').all()) {
     const href = await link.getAttribute('href');
     if (href?.includes('/blob/')) expect(href).toContain('/blob/pilot-2/');

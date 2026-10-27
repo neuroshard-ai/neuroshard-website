@@ -231,7 +231,7 @@ export default function Home() {
       <h2>Need a hand?</h2>
       <div className="help">
         <Link to="/help"><b>Fix a problem</b><span>Every message the installer and chat can show, and what to do.</span><ArrowRight size={16} /></Link>
-        <Link to="/help#ask"><b>Ask us</b><span>Open a prefilled help request{COMMUNITY_URL ? ', or join the community chat' : ''}.</span><ArrowRight size={16} /></Link>
+        <Link to="/help#ask"><b>Ask us</b><span>Open a prefilled help request{COMMUNITY_URL ? ', or join us on Discord' : ''}.</span><ArrowRight size={16} /></Link>
         <a href={`mailto:${EMAIL}`}><b>Email us</b><span>{EMAIL}</span><ExternalLink size={15} /></a>
       </div>
     </section>

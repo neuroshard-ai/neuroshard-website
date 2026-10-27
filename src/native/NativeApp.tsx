@@ -6,7 +6,7 @@ import logo from '../assets/logo_white.png';
 import './native.css';
 import Home from './Home';
 import Help from './Help';
-import { DOCS, SOURCE } from './release';
+import { COMMUNITY_URL, DOCS, SOURCE } from './release';
 
 function RoutePosition() {
   const { pathname, hash } = useLocation();
@@ -52,6 +52,7 @@ export default function NativeApp() {
         <a href={`${DOCS}/DECENTRALIZATION.md`}>Decentralization</a>
         <a href={asset('/papers/FINE2026_neuroshard_short.pdf')}>Paper</a>
         <a href={SOURCE}>Source code</a>
+        {COMMUNITY_URL && <a href={COMMUNITY_URL}>Discord</a>}
         <a href="mailto:info@neuroshard.com">Contact</a>
       </nav>
     </footer></div>;

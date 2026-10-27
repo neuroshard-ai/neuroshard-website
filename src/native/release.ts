@@ -8,8 +8,8 @@ export const INSTALLER_SHA256 = 'adf7b983d2c6b21ddfb2d9ed39d2234d0c3e5103e59777e
 export const join = (role: string) => `curl -LsSf ${INSTALLER} | bash -s -- ${role}${role === 'check' ? '' : ` --branch ${RELEASE}`}`;
 export const CHAT = '~/.venvs/neuroshard/bin/neuroshard assistant chat';
 export const EMAIL = 'info@neuroshard.com';
-// Set this when the community chat exists; until then the site doesn't show it.
-export const COMMUNITY_URL = '';
+// Community chat (Discord). Must be a never-expiring invite; empty hides it.
+export const COMMUNITY_URL = 'https://discord.gg/yS6jWpU5J';
 
 /** A GitHub issue from the project's "Joining didn't work" form, with what we know already filled in. */
 export function helpIssue(command = '', what = '') {
