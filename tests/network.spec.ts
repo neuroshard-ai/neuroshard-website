@@ -120,7 +120,7 @@ test('the footer links only to current material, and retired pages lead home', a
     const href = await link.getAttribute('href');
     if (href?.includes('/blob/')) expect(href).toContain('/blob/pilot-2/');
   }
-  for (const old of ['/vision', '/teams', '/build', '/protocol']) {
+  for (const old of ['/vision', '/teams', '/build', '/protocol', '/baseline', '/chat']) {
     await page.goto(old);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('An open AI that');
   }

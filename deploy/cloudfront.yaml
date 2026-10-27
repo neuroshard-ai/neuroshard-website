@@ -1,0 +1,172 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  neuroshard.com on CloudFront. The static site comes from a private S3 bucket (Origin Access Control, no public
+  bucket). Optional AWS WAF (EnableWaf=true). DNS is NOT changed by this stack: test on the CloudFront domain first, then switch the records.
+  /assistant/* (the read-only live-network API) comes from a small locked-down explorer instance that only
+  CloudFront can reach. Security headers, HTTPS only, TLS 1.2+, AWS managed WAF rules and a per-IP rate limit.
+
+Parameters:
+  EnableWaf:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: AWS WAF managed rules and a per-IP rate limit (about $9-10/month). Off by default; the static site has no server code, and the explorer origin rate-limits and validates input itself.
+  Bucket:
+    Type: String
+    Default: neuroshard-website-633665787904
+  ExplorerOriginDomain:
+    Type: String
+    Description: Public DNS name of the explorer instance (CloudFront requires a hostname, not an IP)
+  CertificateArn:
+    Type: String
+    Description: ACM certificate in us-east-1 covering neuroshard.com and www.neuroshard.com
+
+Conditions:
+  UseWaf: !Equals [!Ref EnableWaf, 'true']
+
+Resources:
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: neuroshard-website-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  Headers:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: neuroshard-security-headers
+        # Same policy as deploy/security-headers.conf, which the test suite enforces.
+        SecurityHeadersConfig:
+          StrictTransportSecurity: { AccessControlMaxAgeSec: 31536000, IncludeSubdomains: true, Override: true }
+          ContentSecurityPolicy:
+            Override: true
+            ContentSecurityPolicy: "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+          ContentTypeOptions: { Override: true }
+          FrameOptions: { FrameOption: DENY, Override: true }
+          ReferrerPolicy: { ReferrerPolicy: strict-origin-when-cross-origin, Override: true }
+        CustomHeadersConfig:
+          Items:
+            - { Header: Permissions-Policy, Value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()", Override: true }
+            - { Header: Cross-Origin-Opener-Policy, Value: same-origin, Override: true }
+            - { Header: Cross-Origin-Resource-Policy, Value: same-origin, Override: true }
+        RemoveHeadersConfig:
+          Items: [{ Header: Server }]
+
+  # Single-page app: unknown paths serve index.html (with a 200), and old addresses keep working.
+  SpaRewrite:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: neuroshard-spa-rewrite
+      AutoPublish: true
+      FunctionConfig: { Comment: Serve index.html for app routes; pinned join.sh, Runtime: cloudfront-js-2.0 }
+      FunctionCode: |
+        function handler(event) {
+          var r = event.request, uri = r.uri;
+          if (uri === '/join.sh') {
+            return { statusCode: 302, statusDescription: 'Found', headers: { location: { value:
+              'https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh' } } };
+          }
+          if (/\/\./.test(uri) || /(\.(bak|orig|swp|old|tmp|tgz|tar|gz|zip|sql|env)|~)$/.test(uri)) {
+            return { statusCode: 404, statusDescription: 'Not Found' };
+          }
+          if (uri.indexOf('.', uri.lastIndexOf('/')) === -1) r.uri = '/index.html';
+          return r;
+        }
+
+  Waf:
+    Type: AWS::WAFv2::WebACL
+    Condition: UseWaf
+    Properties:
+      Name: neuroshard-website
+      Scope: CLOUDFRONT
+      DefaultAction: { Allow: {} }
+      VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: neuroshard-website, SampledRequestsEnabled: true }
+      Rules:
+        - Name: rate-limit-per-ip
+          Priority: 0
+          Action: { Block: {} }
+          Statement: { RateBasedStatement: { Limit: 1000, EvaluationWindowSec: 300, AggregateKeyType: IP } }
+          VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: rate-limit, SampledRequestsEnabled: true }
+        - Name: aws-common
+          Priority: 1
+          OverrideAction: { None: {} }
+          Statement: { ManagedRuleGroupStatement: { VendorName: AWS, Name: AWSManagedRulesCommonRuleSet } }
+          VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: aws-common, SampledRequestsEnabled: true }
+        - Name: aws-known-bad-inputs
+          Priority: 2
+          OverrideAction: { None: {} }
+          Statement: { ManagedRuleGroupStatement: { VendorName: AWS, Name: AWSManagedRulesKnownBadInputsRuleSet } }
+          VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: aws-bad-inputs, SampledRequestsEnabled: true }
+        - Name: aws-ip-reputation
+          Priority: 3
+          OverrideAction: { None: {} }
+          Statement: { ManagedRuleGroupStatement: { VendorName: AWS, Name: AWSManagedRulesAmazonIpReputationList } }
+          VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: aws-ip-reputation, SampledRequestsEnabled: true }
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Aliases: [neuroshard.com, www.neuroshard.com]
+        HttpVersion: http2and3
+        IPV6Enabled: true
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        WebACLId: !If [UseWaf, !GetAtt Waf.Arn, !Ref AWS::NoValue]
+        ViewerCertificate: { AcmCertificateArn: !Ref CertificateArn, SslSupportMethod: sni-only, MinimumProtocolVersion: TLSv1.2_2021 }
+        Origins:
+          - Id: site
+            DomainName: !Sub '${Bucket}.s3.us-east-1.amazonaws.com'
+            OriginAccessControlId: !GetAtt OAC.Id
+            S3OriginConfig: { OriginAccessIdentity: '' }
+          - Id: explorer
+            DomainName: !Ref ExplorerOriginDomain
+            CustomOriginConfig: { OriginProtocolPolicy: http-only, HTTPPort: 80, OriginReadTimeout: 30 }
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6   # Managed-CachingOptimized
+          ResponseHeadersPolicyId: !Ref Headers
+          FunctionAssociations: [{ EventType: viewer-request, FunctionARN: !GetAtt SpaRewrite.FunctionMetadata.FunctionARN }]
+        CacheBehaviors:
+          - PathPattern: /assistant/*
+            TargetOriginId: explorer
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad   # Managed-CachingDisabled
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac   # Managed-AllViewerExceptHostHeader (query strings)
+            ResponseHeadersPolicyId: !Ref Headers
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: CloudFrontOnly
+            Effect: Allow
+            Principal: { Service: cloudfront.amazonaws.com }
+            Action: s3:GetObject
+            Resource: !Sub 'arn:aws:s3:::${Bucket}/*'
+            Condition: { StringEquals: { 'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}' } }
+          - Sid: TlsOnly
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource: [!Sub 'arn:aws:s3:::${Bucket}', !Sub 'arn:aws:s3:::${Bucket}/*']
+            Condition: { Bool: { 'aws:SecureTransport': 'false' } }
+
+Outputs:
+  DistributionId: { Value: !Ref Distribution }
+  DistributionDomain:
+    Value: !GetAtt Distribution.DomainName
+    Description: Test the site here first, then point neuroshard.com and www at it (A/AAAA alias, zone Z2FDTNDATAQYW2)
