@@ -1,11 +1,12 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, Clock, Copy, ExternalLink, LifeBuoy, Lock, Search, Terminal } from 'lucide-react';
 import { AssistantJobs, AssistantNetwork, atoms, get, Lookup, short } from './api';
 import { CHAT, COMMUNITY_URL, DOCS, EMAIL, INSTALLER, INSTALLER_SHA256, join, RELEASE, SOURCE } from './release';
+import { Command, IfYouSee, Line, Terminal } from './Term';
 import './home.css';
 
 export { SOURCE };
+export { Command };
 
 function useLive<T>(path: string, every = 10000) {
   const [value, setValue] = useState<T | null>(null), [error, setError] = useState(false);
@@ -16,12 +17,6 @@ function useLive<T>(path: string, every = 10000) {
   return { value, error };
 }
 
-export function Command({ text, label = 'Copy command' }: { text: string; label?: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => void navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1600); });
-  return <div className="cmd"><code>{text}</code><button aria-label={label} onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}</button></div>;
-}
-
 function LiveLine({ n, error }: { n: AssistantNetwork | null; error: boolean }) {
   if (error) return <p className="live-line is-off"><span className="dot" />The network can’t be read right now</p>;
   if (!n) return <p className="live-line"><span className="dot" />Reading the network…</p>;
@@ -29,87 +24,127 @@ function LiveLine({ n, error }: { n: AssistantNetwork | null; error: boolean }) 
   return <p className="live-line"><span className="dot" />Live now · block {n.height.toLocaleString()} · {n.validators.length} validators · {owners} owners · model version {n.model_history.length}</p>;
 }
 
-function Try() {
-  return <section className="section" id="try">
-    <h2>Try it in about five minutes.</h2>
-    <p className="lede">No account, no sign-up, no payment details. You get free test tokens automatically. Your keys are made on your machine and stay there.</p>
-    <ol className="try">
-      <li>
-        <span>1</span>
-        <div>
-          <h3>Have a Linux machine</h3>
-          <p>Linux on an x86-64 computer with at least 8 GB of memory and 10 GB of free disk. An Intel CPU with AMX gives the
-            replies we evaluated; on other CPUs it still works, after a warning.</p>
-          <p className="muted-note">No Linux machine? A small cloud server works well: on AWS an <b>m7i.xlarge</b> (4 cores, 16 GB) costs
-            about $0.20 an hour. Shut it down when you’re done. Mac and Windows aren’t supported yet.</p>
-        </div>
-      </li>
-      <li>
-        <span>2</span>
-        <div>
-          <h3>Install it</h3>
-          <p>Open a terminal and paste this one line. It checks your machine, installs everything into its own folder in your
-            home directory, and changes nothing else. It takes under a minute.</p>
-          <Command text={join('chat')} label="Copy install command" />
-          <p className="muted-note">This downloads the reviewed <b>{RELEASE}</b> release. To check the installer before you run it:</p>
-          <Command text={`curl -LsSf ${INSTALLER} | sha256sum`} label="Copy checksum command" />
-          <p className="muted-note">It should print <span className="inline-cmd mono-wrap">{INSTALLER_SHA256}</span>.</p>
-        </div>
-      </li>
-      <li>
-        <span>3</span>
-        <div>
-          <h3>Start chatting</h3>
-          <p>Paste this to open a conversation:</p>
-          <Command text={CHAT} label="Copy chat command" />
-          <p>The first time, it downloads its part of the model (about 2 GB), gets you test tokens, and connects to the network:
-            allow a couple of minutes. Then type a question about the sample documents it shows, and press Enter.
-            Type <span className="inline-cmd">/quit</span> to finish.</p>
-        </div>
-      </li>
-    </ol>
-    <p className="hint">Stuck? <Link to="/help">See what each message means and how to fix it</Link>, or{' '}
-      <Link to="/help#ask">ask us</Link>.</p>
+// A real session on a 4-core cloud server, October 26, 2026 (trimmed). Notes say what each part means.
+const session: Line[] = [
+  { k: '$', t: 'neuroshard assistant chat', note: 'You start a conversation.' },
+  { k: 'dim', t: 'Workspace: 4 documents, on this machine only.', note: 'It brings sample documents to ask about.' },
+  { k: 'dim', t: '  doc-292283f7a9  Cedar 6581 delivery plan, revision 1, approved' },
+  { k: 'dim', t: '  doc-88b36697f8  Cedar 6581 delivery plan, revision 2, approved' },
+  { k: 'out', t: 'Requesting test NEURO from the faucet', note: 'Free test tokens pay for the chat. They have no cash value.' },
+  { k: 'out', t: 'Job 6dc37dbb: shards served by 34.194.51.150, 3.236.141.240', note: 'Two strangers’ machines run the rest of the model for you.' },
+  { k: 'you', t: 'What is the baseline quantity in the latest approved Cedar 6581 Annex plan?' },
+  { k: 'ai', t: 'assistant (21 s, documents): The latest approved Cedar 6581 Annex delivery plan has a baseline quantity of 70 units. (Sources: doc-35d32ed303)', note: 'About 20 seconds per answer. It cites the document it used.' },
+  { k: 'you', t: '/quit' },
+  { k: 'dim', t: 'The owners commit their logs now; the job settles after its challenge window.', note: 'Their work is signed, so anyone can check it later.' },
+];
+
+function Hero({ n, error }: { n: AssistantNetwork | null; error: boolean }) {
+  return <section className="hero">
+    <div className="hero-copy">
+      <p className="kicker">Open source · free to try</p>
+      <h1>An open AI that <em>improves itself.</em></h1>
+      <p className="hero-sub">NeuroShard is an AI assistant split across computers that people volunteer to host, instead of one
+        company’s data centre. Using it pays for its training, and its hosts vote each update in.</p>
+      <p className="hero-sub plain">Here is exactly what using it looks like.</p>
+      <div className="actions"><a className="btn" href="#try">Try it: 3 steps</a><a className="btn ghost" href="#how">How it works</a></div>
+      <LiveLine n={n} error={error} />
+    </div>
+    <Terminal title="a real session · Oct 26, 2026" lines={session} label="A real NeuroShard chat session, with notes explaining each line" />
   </section>;
 }
 
-const transcript = `Workspace: 4 documents, on this machine only.
-  doc-292283f7a9  Cedar 6581 delivery plan, revision 1, approved
-  doc-88b36697f8  Cedar 6581 delivery plan, revision 2, approved
-  …
-Requesting test NEURO from the faucet
-Job 6dc37dbb02c31adc: shards served by 34.194.51.150:28700, 3.236.141.240:28700.
-you> What is the baseline quantity in the latest approved Cedar 6581 Annex plan?
-assistant (21 s, documents): The latest approved Cedar 6581 Annex delivery plan has a
-baseline quantity of 70 units. (Sources: doc-35d32ed303)
-you> /quit
-The owners commit their logs now; the job settles after its challenge window.`;
+function Step({ n, title, time, children }: { n: number; title: string; time: string; children: React.ReactNode }) {
+  return <li className="step"><div className="step-head"><span className="step-n">{n}</span><h3>{title}</h3><span className="step-time">{time}</span></div>
+    <div className="step-body">{children}</div></li>;
+}
+
+function Try() {
+  return <section className="section" id="try">
+    <p className="kicker">Getting started</p>
+    <h2>Try it in three steps.</h2>
+    <p className="lede">About five minutes. No account, no sign-up, no payment details. Your keys are made on your machine and stay there.</p>
+    <ol className="walk">
+      <Step n={1} title="Check your machine" time="10 seconds">
+        <p>You need a Linux computer (x86-64) with at least 8 GB of memory and 10 GB free disk. Open a terminal and paste this. It
+          only <b>looks</b>: it installs nothing.</p>
+        <Command text={join('check')} label="Copy check command" />
+        <Terminal title="what you should see" label="Expected output of the machine check" lines={[
+          { k: 'out', t: 'This machine: Linux-x86_64, 4 threads, 16 GB RAM, 120 GB free disk, AMX: yes', note: 'What it found.' },
+          { k: 'out', t: '  chat         yes', note: 'This is the one you need. “yes” means you’re ready.' },
+          { k: 'dim', t: '  owner        yes', note: 'Running a node is optional. Ignore these for now.' },
+          { k: 'dim', t: '  auditor      yes' },
+        ]} />
+        <div className="aside">
+          <b>No Linux machine?</b> Rent a small cloud server: on AWS an <b>m7i.xlarge</b> with Ubuntu 24.04 costs about
+          $0.20 an hour, and its browser terminal works fine. Shut it down when you’re done. Mac and Windows aren’t supported yet.
+        </div>
+        <IfYouSee items={[['chat  no: needs 8 GB RAM', 'memory'], ['Every role needs Linux x86_64.', 'not-linux']]} />
+      </Step>
+
+      <Step n={2} title="Install" time="under a minute">
+        <p>Paste this one line. It installs everything into its own folder in your home directory and changes nothing else.</p>
+        <Command text={join('chat')} label="Copy install command" />
+        <Terminal title="what you should see" label="Expected output of the installer" lines={[
+          { k: 'out', t: '== Pinned runtime: Python 3.12.12 through uv', note: 'It brings its own Python. Yours is untouched.' },
+          { k: 'out', t: `== Code at ac4b9e8 (${RELEASE})`, note: `The reviewed ${RELEASE} release, never unreviewed code.` },
+          { k: 'out', t: '== Start a conversation with: …/neuroshard assistant chat', note: 'Done. That’s the command for step 3.' },
+        ]} />
+        <details className="verify">
+          <summary>Want to check the installer first?</summary>
+          <p>Run this. It should print <span className="mono-wrap">{INSTALLER_SHA256}</span></p>
+          <Command text={`curl -LsSf ${INSTALLER} | sha256sum`} label="Copy checksum command" />
+        </details>
+        <IfYouSee items={[['has local changes; this script will not overwrite them', 'local-changes']]} />
+      </Step>
+
+      <Step n={3} title="Chat" time="a few minutes the first time">
+        <p>Start a conversation:</p>
+        <Command text={CHAT} label="Copy chat command" />
+        <p>The first time, it downloads its part of the model (about 2 GB) and fetches free test tokens. Then it shows some sample
+          documents: ask a question about them and press Enter. The first answer takes <b>about 50 seconds</b>; later ones about
+          20. Type <span className="inline-cmd">/quit</span> to finish.</p>
+        <IfYouSee items={[['Experimental client: CPU without amx_bf16', 'experimental-cpu'],
+          ['the network stayed busy until the deadline', 'busy'], ['neuroshard: command not found', 'not-found']]} />
+      </Step>
+    </ol>
+    <p className="stuck">Stuck on something else? <Link to="/help">Search every message it can print</Link>
+      {COMMUNITY_URL && <>, or <a href={COMMUNITY_URL}>ask on Discord</a></>}.</p>
+  </section>;
+}
+
+const limits: [string, string][] = [
+  ['It’s slow', 'About 50 seconds for the first answer, 20 after that. The whole model runs on ordinary CPUs, split across several machines.'],
+  ['It makes mistakes', 'On our four repeated test questions, 116 of 233 answers had the right fact, and only 58 also cited the right document. It often picks an outdated version. A fix is being trained.'],
+  ['It isn’t private', 'The machines that answer can read the conversation, and auditors can download their records. Use the sample documents, never personal or confidential files.'],
+  ['It’s free, and the tokens are worthless', 'Test NEURO from a faucet pays for conversations. It has no cash value. Your only cost is your machine.'],
+];
 
 function Expect() {
   return <section className="section" id="expect">
-    <h2>What to expect.</h2>
-    <p className="lede">It’s an early test. Here’s what a real session on a 4-core cloud server looked like on October 26, and what
-      you should know before you rely on it.</p>
-    <pre className="transcript" aria-label="Example session">{transcript}</pre>
-    <div className="expect">
-      <div><Clock size={18} /><h3>It’s slow</h3><p>The first answer takes about 50 seconds once the conversation opens; later ones
-        about 20 seconds. The whole model runs on ordinary CPUs, split across several machines.</p></div>
-      <div><LifeBuoy size={18} /><h3>It makes mistakes</h3><p>On our four repeated test questions it picked an outdated document
-        version too often: 116 of 233 answers had the right fact, and only 58 also cited the right document. A fix is being
-        trained. Please tell us when it’s wrong.</p></div>
-      <div><Lock size={18} /><h3>It isn’t private</h3><p>The machines that answer a conversation can read it, and auditors can download
-        their records. Use the sample documents or made-up ones, never personal or confidential files.</p></div>
-      <div><Terminal size={18} /><h3>It’s free, and the tokens are worthless</h3><p>You get test NEURO from a faucet to pay for
-        conversations. It has no cash value. Your only cost is your machine.</p></div>
-    </div>
+    <p className="kicker">Before you rely on it</p>
+    <h2>Honest limits.</h2>
+    <p className="lede">It’s an early, invited pilot. It works end to end, and it is not a finished product.</p>
+    <ul className="limits">{limits.map(([h, p]) => <li key={h}><h3>{h}</h3><p>{p}</p></li>)}</ul>
   </section>;
 }
 
-const steps = [
-  ['Ask', 'Your computer runs the first part of the model; owners’ machines run the rest. Every step is signed, so anyone can check it later.'],
-  ['Pay', 'Each conversation pays the owners who served it, in test tokens. A tenth of that goes into a pool that pays for training.'],
-  ['Improve', 'Contributors train an update. A test picked by public randomness after training decides if it’s better. Owners re-run the test, vote, and every node switches.'],
-];
+function How() {
+  return <section className="section" id="how">
+    <p className="kicker">How it works</p>
+    <h2>Your question, step by step.</h2>
+    <p className="lede">The model is split in pieces. Nobody holds all of it, and nobody has to be trusted: every step is signed and can be re-checked.</p>
+    <ol className="flow">
+      <li><span className="flow-where">your computer</span><h3>You ask</h3><p>Your machine runs the first piece of the model on your question.</p></li>
+      <li><span className="flow-where">owners’ machines</span><h3>Owners answer</h3><p>People who host the other pieces finish the answer and sign what they did.</p></li>
+      <li><span className="flow-where">the ledger</span><h3>Everyone gets paid</h3><p>Your test tokens pay those owners. A tenth goes into a pool that pays for training.</p></li>
+      <li><span className="flow-where">contributors &amp; owners</span><h3>It improves</h3><p>Contributors train an update. Owners re-run a test picked after training, vote, and every node switches.</p></li>
+    </ol>
+    <aside className="proof"><b>Has it actually improved itself?</b> Once, so far. On October 17, 2026 the network trained, tested and voted in a new
+      version. Re-measured on October 26 exactly as served, it answers 244 of 452 real-world requests correctly, against 223 for the
+      model it started from. That gain is modest, and smaller than first reported: the original 294-versus-214 figure was measured with
+      a mismatched tokenizer. <a href={`${SOURCE}/pull/153`}>See the evidence</a></aside>
+  </section>;
+}
 
 const roles = [
   { id: 'owner', name: 'Owner', cmd: 'owner --shard 1', does: 'Host half of the model and serve conversations', needs: 'Intel CPU with AMX, 8 threads, 8 GB RAM, 20 GB disk, inbound TCP 28700 and 28781', gets: 'A share of every conversation you serve (in test tokens). Voting comes once members admit you' },
@@ -120,16 +155,16 @@ function Operate() {
   const [active, setActive] = useState('owner');
   const role = roles.find(r => r.id === active)!;
   return <section className="section" id="join">
+    <p className="kicker">Optional · for people with the right hardware</p>
     <h2>Run a node.</h2>
-    <p className="lede">We’re inviting a small first group of independent owners and auditors for about a week. If you have a machine
-      that fits, we’d love your help: every node someone else runs makes the network less dependent on us.</p>
+    <p className="lede">We’re inviting a small first group of independent owners and auditors. Every node someone else runs makes the
+      network less dependent on us. Your machine check (step 1) tells you if yours fits.</p>
     <div className="roles" role="tablist">{roles.map(r => <button key={r.id} role="tab" aria-selected={active === r.id} onClick={() => setActive(r.id)}>{r.name}</button>)}</div>
     <div className="role">
-      <Command text={join(role.cmd)} />
       <dl><div><dt>You</dt><dd>{role.does}</dd></div><div><dt>You need</dt><dd>{role.needs}</dd></div><div><dt>You get</dt><dd>{role.gets}</dd></div></dl>
+      <Command text={join(role.cmd)} />
     </div>
-    <p className="hint">Check your machine first, which installs nothing: <span className="inline-cmd">{join('check')}</span>
-      {' '}· <a href={`${DOCS}/OPERATORS.md`}>Operator guide</a> · <a href={`${SOURCE}/issues/new?template=operator.yml`}>Tell us you joined</a></p>
+    <p className="hint">Read the <a href={`${DOCS}/OPERATORS.md`}>operator guide</a> first, and <a href={`${SOURCE}/issues/new?template=operator.yml`}>tell us you joined</a> so we can help.</p>
     <p className="on-hold"><b>On hold for now:</b> running a validator, and contributing training. Their release needs its own
       qualification first; please don’t start them, even though the installer still accepts them.</p>
     <NodeCheck />
@@ -152,7 +187,7 @@ function NodeCheck() {
   return <form className="node-check" onSubmit={e => void look(e)}>
     <label htmlFor="node-key">Already running a node? Paste its public key.</label>
     <div><input id="node-key" value={key} onChange={e => setKey(e.target.value)} placeholder="Owner, account or validator public key" required spellCheck={false} />
-      <button type="submit" disabled={busy}><Search size={15} /> {busy ? 'Checking…' : 'Check'}</button></div>
+      <button type="submit" disabled={busy}>{busy ? 'Checking…' : 'Check'}</button></div>
     {error && <p className="check-result is-bad" role="alert">{error}</p>}
     {result && <p className="check-result">{lines.length ? lines.join(' ') : 'No record of this key yet. Owners appear once they bond; validators once owners vote them in.'}</p>}
   </form>;
@@ -169,8 +204,9 @@ function Network({ n }: { n: AssistantNetwork | null }) {
   ] : [];
   const versions = n?.model_history.map((h, i) => ({ ...h, v: i + 1 })).reverse() || [];
   return <section className="section" id="network">
+    <p className="kicker">Read from the chain, right now</p>
     <h2>The network, live.</h2>
-    <p className="lede">Read from the chain through every validator. <a href={`${DOCS}/DECENTRALIZATION.md`}>What is decentralized today</a></p>
+    <p className="lede">Read through every validator, not from a database we control. <a href={`${DOCS}/DECENTRALIZATION.md`}>What is decentralized today</a></p>
     {n && <div className="stats">{stats.map(([k, v]) => <div key={k}><span>{k}</span><strong>{v}</strong></div>)}</div>}
     <div className="columns">
       <div><h3>Recent activity</h3><ul className="feed">{jobs?.results.slice(0, 6).map(r => <li key={r.id}>
@@ -186,11 +222,10 @@ function Network({ n }: { n: AssistantNetwork | null }) {
 }
 
 const faq: [string, string][] = [
-  ['Do I need to be technical?', 'You need to paste two lines into a Linux terminal. If you’ve never used one, a cloud server is the easiest way: start one, open its terminal in the browser, and paste. A browser-based chat is coming in a later release.'],
+  ['Do I need to be technical?', 'You need to paste three lines into a Linux terminal. If you’ve never used one, a cloud server is the easiest way: start one, open its terminal in the browser, and paste. A browser-based chat is coming in a later release.'],
   ['Does it cost anything?', 'No. Conversations are paid with free test tokens that it fetches for you. Your only cost is the machine; a suitable cloud server is about $0.20 an hour. NEURO has no cash value.'],
   ['Is it private?', 'No. The machines that answer a conversation can read it, auditors can download their records, and the ledger is public. Use sample or made-up documents.'],
   ['How good are the answers?', 'Limited. In our latest test on four repeated questions, half the answers had the right fact and a quarter also cited the right document. A better version is being trained, and the network must vote it in.'],
-  ['How fast is it?', 'About 50 seconds for the first answer and 20 seconds after that, on a 4-core cloud server. The model runs on CPUs split across machines.'],
   ['What do I need for an owner or auditor?', 'An Intel CPU with AMX (for example AWS m7i or r7i): every piece of work is checked by re-running it exactly, which today only works on that hardware. Users can chat from other x86-64 CPUs after a warning.'],
   ['Who decides what the model learns?', 'Members, by vote. An update only goes live if it beats the current model on a test chosen after training, which members reproduce themselves. No single key can change the model, including ours.'],
   ['Do I get a vote when I join?', 'Not straight away. Anyone can bond and serve, but free test tokens must not buy control, so a bond becomes a vote only when the existing members admit you.'],
@@ -200,39 +235,24 @@ const faq: [string, string][] = [
 export default function Home() {
   const { value: n, error } = useLive<AssistantNetwork>('/assistant/network');
   return <div className="home">
-    <section className="hero">
-      <h1>An open AI that<br /><em>improves itself.</em></h1>
-      <p>NeuroShard is an assistant run by the people who host it. Using it pays for training; owners test every update and vote it in. You can try it now, for free, from a Linux machine.</p>
-      <div className="actions"><a className="btn" href="#try">Try it <ArrowRight size={16} /></a><a className="btn ghost" href="#join">Run a node</a><a className="btn ghost" href="#how">How it works</a></div>
-      <LiveLine n={n} error={error} />
-    </section>
-
+    <Hero n={n} error={error} />
     <Try />
     <Expect />
-
-    <section className="section" id="how">
-      <h2>How it works.</h2>
-      <ol className="steps">{steps.map(([title, text], i) => <li key={title}><span>{i + 1}</span><h3>{title}</h3><p>{text}</p></li>)}</ol>
-      <p className="proof">It has done this on its own once: on October 17, 2026 the network trained, tested and voted in a new version.
-        Re-measured on October 26 exactly as it is served, it answers 244 of 452 real-world requests correctly, against 223 for the
-        model it started from. That gain is modest, and smaller than first reported: the original 294-versus-214 figure was measured with
-        a mismatched tokenizer. <a href={`${SOURCE}/pull/153`}>See the evidence</a></p>
-    </section>
-
+    <How />
     <Operate />
     <Network n={n} />
-
     <section className="section" id="faq">
-      <h2>Questions.</h2>
+      <p className="kicker">Questions</p>
+      <h2>People usually ask.</h2>
       <div className="faq">{faq.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div>
     </section>
-
     <section className="section closing">
       <h2>Need a hand?</h2>
       <div className="help">
-        <Link to="/help"><b>Fix a problem</b><span>Every message the installer and chat can show, and what to do.</span><ArrowRight size={16} /></Link>
-        <Link to="/help#ask"><b>Ask us</b><span>Open a prefilled help request{COMMUNITY_URL ? ', or join us on Discord' : ''}.</span><ArrowRight size={16} /></Link>
-        <a href={`mailto:${EMAIL}`}><b>Email us</b><span>{EMAIL}</span><ExternalLink size={15} /></a>
+        <Link to="/help"><b>Fix a problem</b><span>Every message the installer and chat can show, and what to do.</span></Link>
+        {COMMUNITY_URL && <a href={COMMUNITY_URL}><b>Ask on Discord</b><span>Other users and the team, in one place.</span></a>}
+        <Link to="/help#ask"><b>Ask us</b><span>Open a prefilled help request.</span></Link>
+        <a href={`mailto:${EMAIL}`}><b>Email us</b><span>{EMAIL}</span></a>
       </div>
     </section>
   </div>;

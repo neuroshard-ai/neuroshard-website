@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  // The Content-Security-Policy allows fonts only from this origin, so never inline assets as data: URLs.
+  build: { assetsInlineLimit: 0 },
   server: {
     host: '127.0.0.1',
     proxy: Object.fromEntries(['/api', '/network/', '/rpc', '/healthz', '/assistant'].map(path =>

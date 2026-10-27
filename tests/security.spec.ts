@@ -12,7 +12,7 @@ for (const path of ['/', '/help', '/help#ask']) {
     const response = await page.goto(path);
     expect(response?.headers()['content-security-policy']).toContain("default-src 'none'");
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    expect(await page.evaluate(() => getComputedStyle(document.querySelector('h1')!).fontFamily)).toContain('Space Grotesk');
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('h1')!).fontFamily)).toContain('Martian Mono');
     await page.waitForLoadState('networkidle');
     expect(violations).toEqual([]);
     expect(external).toEqual([]);

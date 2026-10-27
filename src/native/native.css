@@ -28,3 +28,20 @@
 .native-app .skip-to-content{position: absolute; top: -80px; left: 15px; z-index: 100; background: var(--lime); color: #111; padding: 14px;}
 .native-app .skip-to-content:focus{top: 12px;}
 @media(max-width:720px){.network-switch{padding: 20px;}.network-switch .native-actions{flex-direction: column; align-items: stretch;}.baseline-banner > div{font-size: 10px;}}
+
+/* Terminal-native header and footer (overrides the older rules above) */
+.native-app{background:#0c0d0b;color:#eef1e8}
+.native-header{height:68px;max-width:1184px;border-bottom:1px solid #272a22}
+.native-brand{font:600 17px 'Martian Mono Variable','JetBrains Mono',monospace;letter-spacing:-.04em;gap:10px}
+.brand-mark{display:inline-grid;place-items:center;width:26px;height:26px;background:#c8ff00;color:#0c0d0b;font:700 16px 'Martian Mono Variable','JetBrains Mono',monospace;letter-spacing:0}
+.native-header nav{gap:26px;font:500 13px 'JetBrains Mono',monospace}
+.native-header nav a{color:#a7ad9e}
+.native-header nav a:hover{color:#eef1e8}
+.native-header .nav-join{background:#c8ff00;color:#0c0d0b!important;border-radius:2px;padding:8px 14px;font-weight:600}
+.native-header .nav-join:hover{background:#ddff6a}
+.mobile-menu{font:600 13px 'JetBrains Mono',monospace;color:#c8ff00;border:1px solid #3d4334;padding:6px 10px;border-radius:2px}
+.site-footer{max-width:1056px;color:#737a6a;font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.footer-brand strong{display:flex;align-items:center;gap:10px;font:600 15px 'Martian Mono Variable','JetBrains Mono',monospace;letter-spacing:-.04em}
+.footer-brand .brand-mark{width:20px;height:20px;font-size:12px}
+.native-page h1{font-family:'Martian Mono Variable','JetBrains Mono',monospace;letter-spacing:-.04em}
+@media(max-width:900px){.native-header{padding:0 18px;position:relative}.mobile-menu{display:block}.native-header nav{display:none;position:absolute;top:67px;left:0;right:0;z-index:20;background:#121410;border-bottom:1px solid #272a22;padding:22px;align-items:stretch;gap:20px}.native-header nav.open{display:flex;flex-direction:column}.native-header .nav-join{align-self:flex-start}}

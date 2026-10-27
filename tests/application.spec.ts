@@ -13,7 +13,7 @@ test('the home page states plainly when the network cannot be read', async ({ pa
   await page.route('**/assistant/**', route => route.fulfill({ status: 503, json: { error: 'offline' } }));
   await page.goto('/');
   await expect(page.getByText('The network can’t be read right now')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Try it in about five minutes.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Try it in three steps.' })).toBeVisible();
 });
 
 test('mobile navigation is usable and nothing overflows', async ({ page }) => {

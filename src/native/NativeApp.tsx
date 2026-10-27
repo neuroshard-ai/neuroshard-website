@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { ArrowRight, Menu, X } from 'lucide-react';
 import { asset } from './api';
-import logo from '../assets/logo_white.png';
 import './native.css';
 import Home from './Home';
 import Help from './Help';
@@ -36,15 +34,15 @@ const MOVED: [string, string][] = [
 export default function NativeApp() {
   const [menu, setMenu] = useState(false);
   return <div className="native-app"><RoutePosition /><a className="skip-to-content" href="#main">Skip to content</a>
-    <header className="native-header"><Link to="/" className="native-brand" onClick={() => setMenu(false)}><img src={logo} alt="" /><span>NeuroShard</span></Link><button className="mobile-menu" aria-label="Toggle navigation" aria-expanded={menu} aria-controls="primary-navigation" onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button><nav id="primary-navigation" className={menu ? 'open' : ''} onClick={() => setMenu(false)}><Link to="/#how">How it works</Link><Link to="/#join">Run a node</Link><Link to="/#faq">FAQ</Link><Link to="/help">Help</Link><a href={SOURCE}>GitHub</a><Link className="nav-join" to="/#try">Try it</Link></nav></header>
+    <header className="native-header"><Link to="/" className="native-brand" onClick={() => setMenu(false)}><span className="brand-mark" aria-hidden="true">N</span><span>neuroshard</span></Link><button className="mobile-menu" aria-label="Toggle navigation" aria-expanded={menu} aria-controls="primary-navigation" onClick={() => setMenu(!menu)}>{menu ? 'close' : 'menu'}</button><nav id="primary-navigation" className={menu ? 'open' : ''} onClick={() => setMenu(false)}><Link to="/#how">How it works</Link><Link to="/#join">Run a node</Link><Link to="/#faq">FAQ</Link><Link to="/help">Help</Link>{COMMUNITY_URL && <a href={COMMUNITY_URL}>Discord</a>}<a href={SOURCE}>GitHub</a><Link className="nav-join" to="/#try">Try it</Link></nav></header>
     <main id="main"><Routes>
       <Route path="/" element={<Home />} />
       <Route path="/help" element={<Help />} />
       {MOVED.map(([from, to]) => <Route key={from} path={from} element={<Navigate to={to} replace />} />)}
-      <Route path="*" element={<section className="native-wrap native-page"><h1>Page not found.</h1><Link className="native-button" to="/">Go to the homepage <ArrowRight size={16} /></Link></section>} />
+      <Route path="*" element={<section className="native-wrap native-page"><h1>Page not found.</h1><Link className="native-button" to="/">Go to the homepage →</Link></section>} />
     </Routes></main>
     <footer className="site-footer">
-      <div className="footer-brand"><strong>NeuroShard</strong><span>Open source · Apache 2.0</span></div>
+      <div className="footer-brand"><strong><span className="brand-mark" aria-hidden="true">N</span>neuroshard</strong><span>Open source · Apache 2.0 · an invited pilot</span></div>
       <nav aria-label="Footer">
         <Link to="/help">Help</Link>
         <a href={`${DOCS}/OPERATORS.md`}>Operator guide</a>

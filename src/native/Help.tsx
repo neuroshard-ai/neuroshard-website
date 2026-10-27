@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, ExternalLink, Search } from 'lucide-react';
-import { Command } from './Home';
+import { Command } from './Term';
 import { CHAT, COMMUNITY_URL, DOCS, EMAIL, helpIssue, join, SOURCE } from './release';
 import './home.css';
 
@@ -68,14 +67,14 @@ function Ask() {
       <label htmlFor="ask-what">What it printed (the last 20 lines or so)</label>
       <textarea id="ask-what" rows={8} value={what} onChange={e => setWhat(e.target.value)} spellCheck={false}
         placeholder="Paste the messages here" />
-      <button className="btn" type="submit">Open a help request <ExternalLink size={15} /></button>
+      <button className="btn" type="submit">Open a help request</button>
     </form>
     <p className="hint">The request also asks for your machine check, which installs nothing:</p>
     <Command text={join('check')} />
     <div className="help ask-other">
-      {COMMUNITY_URL && <a href={COMMUNITY_URL}><b>Discord</b><span>Ask other users and the team in the community chat.</span><ExternalLink size={15} /></a>}
-      <a href={`mailto:${EMAIL}?subject=NeuroShard%20help`}><b>Email</b><span>{EMAIL}: we answer within a working day during the pilot.</span><ExternalLink size={15} /></a>
-      <a href={`${DOCS}/OPERATORS.md`}><b>Operator guide</b><span>For owners and auditors: joining, upgrading, leaving.</span><ExternalLink size={15} /></a>
+      {COMMUNITY_URL && <a href={COMMUNITY_URL}><b>Discord</b><span>Ask other users and the team in the community chat.</span></a>}
+      <a href={`mailto:${EMAIL}?subject=NeuroShard%20help`}><b>Email</b><span>{EMAIL}: we answer within a working day during the pilot.</span></a>
+      <a href={`${DOCS}/OPERATORS.md`}><b>Operator guide</b><span>For owners and auditors: joining, upgrading, leaving.</span></a>
     </div>
   </section>;
 }
@@ -87,10 +86,12 @@ export default function Help() {
   const shown = FIXES.filter(f => !q || [f.when, f.means, ...f.says, ...f.fix].join(' ').toLowerCase().includes(q));
   const groups = ['Installing', 'Starting chat', 'In a conversation'];
   return <div className="home help-page">
-    <section className="hero compact-hero">
-      <h1>Help.</h1>
-      <p>Find the message you saw, and what to do about it. Still stuck? <a href="#ask">Ask us</a>.</p>
-      <label className="search" htmlFor="help-search"><Search size={16} />
+    <section className="compact-hero">
+      <p className="kicker">Help</p>
+      <h1>Paste the message you saw.</h1>
+      <p>Every message the installer and chat can print, what it means, and what to do. Still stuck?{' '}
+        {COMMUNITY_URL && <><a href={COMMUNITY_URL}>Ask on Discord</a> or </>}<a href="#ask">ask us</a>.</p>
+      <label className="search" htmlFor="help-search"><span className="search-prompt" aria-hidden="true">grep</span>
         <input id="help-search" type="search" placeholder="Paste or type part of the message" value={query}
           onChange={e => setQuery(e.target.value)} autoFocus={!hash} spellCheck={false} /></label>
     </section>
@@ -99,7 +100,7 @@ export default function Help() {
       return items.length ? <section className="section fixes" key={group}>
         <h2>{group}</h2>
         {items.map(f => <article key={f.id} id={f.id} className="fix">
-          {f.says.map(s => <code key={s}>{s}</code>)}
+          <div className="fix-says">{f.says.map(s => <code key={s}>{s}</code>)}</div>
           <p>{f.means}</p>
           <ul>{f.fix.map(x => <li key={x}>{x}</li>)}</ul>
           {f.cmd && <Command text={f.cmd} />}
@@ -109,7 +110,7 @@ export default function Help() {
     {!shown.length && <section className="section"><p className="lede">No match for that message. <a href="#ask">Ask us</a> and paste it in full.</p></section>}
     <Ask />
     <section className="section closing">
-      <p className="hint"><Link to="/#try">Back to getting started <ArrowRight size={14} /></Link> · <a href={SOURCE}>Source code</a></p>
+      <p className="hint"><Link to="/#try">← Back to getting started</Link> · <a href={SOURCE}>Source code</a></p>
     </section>
   </div>;
 }

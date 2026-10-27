@@ -33,18 +33,25 @@ test('the home page gets a user started: install, chat, what to expect, live sta
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('An open AI that');
   await expect(page.getByText('Live now · block 801,234 · 5 validators · 2 owners · model version 1')).toBeVisible();
-  await page.getByRole('link', { name: 'Try it', exact: true }).first().click();
-  await expect(page.getByRole('heading', { name: 'Try it in about five minutes.' })).toBeVisible();
+  await page.getByRole('link', { name: 'Try it: 3 steps' }).click();
+  await expect(page.getByRole('heading', { name: 'Try it in three steps.' })).toBeVisible();
   // The installer is pinned to the reviewed release, never main, and its checksum is shown.
   await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- chat --branch pilot-2')).toBeVisible();
+  // Step 1 is a check that installs nothing.
+  await expect(page.locator('#try').getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- check', { exact: true })).toBeVisible();
+  await page.getByText('Want to check the installer first?').click();
   await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | sha256sum')).toBeVisible();
-  await expect(page.getByText('adf7b983d2c6b21ddfb2d9ed39d2234d0c3e5103e59777e508907d7d81bbd37c')).toBeVisible();
+  await expect(page.getByText(/adf7b983d2c6b21ddfb2d9ed39d2234d0c3e5103e59777e508907d7d81bbd37c/)).toBeVisible();
+  // Each step links the messages it can print to their fix.
+  await page.getByRole('link', { name: /the network stayed busy until the deadline/ }).click();
+  await expect(page).toHaveURL(/\/help#busy$/);
+  await page.goto('/#try');
   await expect(page.getByText('~/.venvs/neuroshard/bin/neuroshard assistant chat', { exact: true })).toBeVisible();
   await expect(page.locator('body')).not.toContainText('neuroshard.com/join.sh');
   // The known limits are stated where a user decides to try it.
   await expect(page.getByRole('heading', { name: 'It isn’t private' })).toBeVisible();
   await expect(page.getByText(/116 of 233 answers had the right fact, and only 58 also cited the right document/)).toBeVisible();
-  await expect(page.getByText(/first answer takes about 50 seconds/)).toBeVisible();
+  await expect(page.getByText(/The first answer takes/)).toBeVisible();
   await expect(page.getByText('4 of 5 signing')).toBeVisible();
   await expect(page.getByText('0.423 NEURO')).toBeVisible();
   await expect(page.getByText('owners earned 0.17699 NEURO')).toBeVisible();
@@ -59,7 +66,7 @@ test('operators see only the invited roles, with validators and contributors on 
   await page.getByRole('tab', { name: 'Auditor' }).click();
   await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- auditor --branch pilot-2')).toBeVisible();
   await expect(page.locator('.on-hold')).toContainText('running a validator, and contributing training');
-  await expect(page.getByText('curl -LsSf https://raw.githubusercontent.com/neuroshard-ai/neuroshard/pilot-2/scripts/join.sh | bash -s -- check', { exact: true })).toBeVisible();
+  await expect(page.locator('#join').getByRole('link', { name: 'operator guide' })).toHaveAttribute('href', /\/blob\/pilot-2\/docs\/OPERATORS\.md$/);
 });
 
 test('a node operator can check a public key', async ({ page }) => {
